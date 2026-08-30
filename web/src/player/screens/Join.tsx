@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { playerApi, tokenStore, type PublicGame } from '../../shared/api';
 import { isValidTeamName, normalizeCode } from '../../shared/format';
@@ -33,6 +33,12 @@ export function Join() {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [showInstall, setShowInstall] = useState(() => !isStandalone() && !installBannerDismissed());
+	const nextBtn = useRef<HTMLButtonElement>(null);
+	/** Picking an existing team near the bottom of a long list — bring NEXT into view. */
+	const pickTeam = (id: string) => {
+		setTeamId((cur) => (cur === id ? null : id));
+		window.setTimeout(() => nextBtn.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50);
+	};
 
 	const [justJoined, setJustJoined] = useState(false);
 	useEffect(() => {
@@ -147,7 +153,7 @@ export function Join() {
 								type="button"
 								key={t.id}
 								className={`team-row light ${teamId === t.id ? 'selected' : ''}`}
-								onClick={() => setTeamId(teamId === t.id ? null : t.id)}
+								onClick={() => pickTeam(t.id)}
 								aria-pressed={teamId === t.id}
 							>
 								<TeamTile color={t.color} size="xs" />
@@ -189,7 +195,7 @@ export function Join() {
 
 				{error && <div className="error">{error}</div>}
 				<div className="spacer" />
-				<button className="btn md center" style={{ minWidth: 207 }} type="submit" disabled={!canSubmit || busy}>
+				<button ref={nextBtn} className="btn md center" style={{ minWidth: 207, scrollMarginBottom: 24 }} type="submit" disabled={!canSubmit || busy}>
 					{busy ? 'Joining…' : 'Next'}
 				</button>
 			</form>
