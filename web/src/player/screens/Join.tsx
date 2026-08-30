@@ -4,6 +4,8 @@ import { playerApi, tokenStore, type PublicGame } from '../../shared/api';
 import { isValidTeamName, normalizeCode } from '../../shared/format';
 import { useGame } from '../GameContext';
 import { Screen, TeamTile } from '../components';
+import { InstallBanner } from './Install';
+import { dismissInstallBanner, installBannerDismissed, isStandalone } from '../../shared/install';
 
 const REMEMBER_CODE = 'zoo-hunt:code';
 const COLORS = ['yellow', 'green', 'blue', 'red', 'purple', 'orange'];
@@ -30,6 +32,7 @@ export function Join() {
 	const [teamId, setTeamId] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [showInstall, setShowInstall] = useState(() => !isStandalone() && !installBannerDismissed());
 
 	const [justJoined, setJustJoined] = useState(false);
 	useEffect(() => {
@@ -93,8 +96,16 @@ export function Join() {
 
 	return (
 		<Screen nav={false}>
+			{showInstall && (
+				<InstallBanner
+					onDismiss={() => {
+						dismissInstallBanner();
+						setShowInstall(false);
+					}}
+				/>
+			)}
 			<form onSubmit={submit} className="stack" style={{ flex: 1, gap: 18 }}>
-				<div style={{ marginTop: 26 }}>
+				<div style={{ marginTop: showInstall ? 4 : 26 }}>
 					<h1 className="display h-title">Choose your team</h1>
 					<p className="h-sub" style={{ marginTop: 6 }}>
 						Pick a team name and color.

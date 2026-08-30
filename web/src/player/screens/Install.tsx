@@ -19,11 +19,21 @@ const ShareGlyph = () => (
 		<path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8" />
 	</svg>
 );
-const DotsGlyph = () => (
+const DotsGlyph = ({ horizontal = false }: { horizontal?: boolean }) => (
 	<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style={{ verticalAlign: '-5px' }} aria-label="Menu icon">
-		<circle cx="12" cy="5" r="2" />
-		<circle cx="12" cy="12" r="2" />
-		<circle cx="12" cy="19" r="2" />
+		{horizontal ? (
+			<>
+				<circle cx="5" cy="12" r="2" />
+				<circle cx="12" cy="12" r="2" />
+				<circle cx="19" cy="12" r="2" />
+			</>
+		) : (
+			<>
+				<circle cx="12" cy="5" r="2" />
+				<circle cx="12" cy="12" r="2" />
+				<circle cx="12" cy="19" r="2" />
+			</>
+		)}
 	</svg>
 );
 
@@ -90,15 +100,21 @@ export function Install() {
 										Open <b>{url}</b> in <b>Safari</b>.
 									</Step>
 									<Step n={2}>
-										Tap the <b>Share</b> button <ShareGlyph /> at the bottom of the screen (the square with an arrow).
+										Tap the <b>⋯</b> button <DotsGlyph horizontal /> at the right end of the address bar.
 									</Step>
 									<Step n={3}>
-										Scroll down and tap <b>Add to Home Screen</b>.
+										Tap <b>Share</b> <ShareGlyph />, then scroll down and tap <b>Add to Home Screen</b>.
+										<span className="tiny muted" style={{ display: 'block', fontWeight: 600 }}>
+											(On some layouts <b>Add to Home Screen</b> is right there in the ⋯ list — tap it directly.)
+										</span>
 									</Step>
 									<Step n={4}>
-										Tap <b>Add</b> in the top-right corner. Done — look for the monkey on your Home Screen!
+										Leave <b>Open as Web App</b> on, then tap <b>Add</b> (top-right). Done — look for the monkey on your Home Screen!
 									</Step>
 								</ol>
+								<div className="tiny muted" style={{ marginTop: 10, fontWeight: 600 }}>
+									Older iPhone (iOS 17/18)? Tap the <b>Share</b> button <ShareGlyph /> at the bottom of Safari instead, then <b>Add to Home Screen</b> → <b>Add</b>.
+								</div>
 							</div>
 						) : (
 							<div className="card">
@@ -123,15 +139,18 @@ export function Install() {
 										Open <b>{url}</b> in <b>Chrome</b>.
 									</Step>
 									<Step n={2}>
-										Tap the <b>⋮ menu</b> <DotsGlyph /> in the top-right corner.
+										Tap the <b>⋮</b> menu <DotsGlyph /> at the right of the address bar.
 									</Step>
 									<Step n={3}>
-										Tap <b>Add to Home screen</b> (or <b>Install app</b>).
+										Tap <b>Install and create shortcut</b> (older Chrome says <b>Add to Home screen</b> or <b>Install app</b>).
 									</Step>
 									<Step n={4}>
-										Tap <b>Add</b> / <b>Install</b>. Look for the monkey on your Home Screen!
+										Tap <b>Install</b>. Look for the monkey on your Home Screen!
 									</Step>
 								</ol>
+								<div className="tiny muted" style={{ marginTop: 10, fontWeight: 600 }}>
+									Samsung Internet: tap the <b>≡</b> menu at the bottom → <b>Add page to</b> → <b>Home screen</b>.
+								</div>
 							</div>
 						)}
 
