@@ -45,6 +45,7 @@ export function Install() {
 	const { available, install } = useInstallPrompt();
 	const standalone = isStandalone();
 	const iosOk = isIosSafari();
+	const [shot, setShot] = useState(true);
 	const url = 'zoo-hunt.com';
 
 	return (
@@ -112,6 +113,11 @@ export function Install() {
 										Leave <b>Open as Web App</b> on, then tap <b>Add</b> (top-right). Done — look for the monkey on your Home Screen!
 									</Step>
 								</ol>
+								{/* Drop a real share-sheet screenshot at web/public/art/install-ios-share.jpg and it appears here. */}
+								<figure className="install-shot" hidden={!shot}>
+									<img src="/art/install-ios-share.jpg" alt="Safari share sheet with “Add to Home Screen” circled" loading="lazy" onError={() => setShot(false)} />
+									<figcaption className="tiny muted">It looks like this — scroll the list until you see <b>Add to Home Screen</b>.</figcaption>
+								</figure>
 								<div className="tiny muted" style={{ marginTop: 10, fontWeight: 600 }}>
 									Older iPhone (iOS 17/18)? Tap the <b>Share</b> button <ShareGlyph /> at the bottom of Safari instead, then <b>Add to Home Screen</b> → <b>Add</b>.
 								</div>

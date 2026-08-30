@@ -1176,6 +1176,22 @@ img {
 	font-family: var(--f-display);
 	font-size: 18px;
 }
+.install-shot {
+	margin: 14px 0 0;
+	text-align: center;
+}
+.install-shot img {
+	width: 100%;
+	max-width: 300px;
+	margin: 0 auto;
+	border: 2px solid var(--green-ink);
+	border-radius: 18px;
+	box-shadow: var(--shadow);
+}
+.install-shot figcaption {
+	margin-top: 6px;
+	font-weight: 600;
+}
 /* Running from the Home Screen: respect the notch / status bar. */
 @media (display-mode: standalone) {
 	.screen {
