@@ -9,15 +9,15 @@ export function YourName() {
 	const s = useGameState();
 	const { refresh } = useGame();
 	const nav = useNavigate();
-	const [name, setName] = useState(s.player.name);
+	// Empty field = keep the random name (shown greyed as the placeholder); typing replaces it.
+	const [name, setName] = useState('');
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const trimmed = name.trim();
-	const changed = trimmed !== s.player.name;
+	const changed = trimmed.length > 0 && trimmed !== s.player.name;
 
 	async function submit(e: FormEvent) {
 		e.preventDefault();
-		if (!trimmed) return;
 		setBusy(true);
 		setError(null);
 		try {
@@ -46,10 +46,10 @@ export function YourName() {
 						So your team knows who found what. Keep the fun one or type your own.
 					</p>
 				</div>
-				<input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" maxLength={40} autoFocus autoComplete="given-name" aria-label="Your name" />
+				<input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder={s.player.name} maxLength={40} autoFocus autoComplete="given-name" aria-label="Your name" />
 				{error && <div className="error">{error}</div>}
 				<div className="spacer" />
-				<button className="btn md center" style={{ minWidth: 207 }} type="submit" disabled={!trimmed || busy}>
+				<button className="btn md center" style={{ minWidth: 207 }} type="submit" disabled={busy}>
 					{busy ? 'Saving…' : changed ? 'Next' : `Keep “${s.player.name}”`}
 				</button>
 			</form>
