@@ -177,6 +177,18 @@ playerRoutes.get('/me', requirePlayer, async (c) => {
 	return c.json(await bootstrap(c.env.DB, c.get('game'), c.get('player'), c.get('team')));
 });
 
+/** A player sets their own display name (asked right after joining; the host can change it later). */
+playerRoutes.patch('/me', requirePlayer, async (c) => {
+	const player = c.get('player');
+	const body = await c.req.json<{ name?: string }>().catch(() => null);
+	const name = (body?.name ?? '').trim();
+	if (!name) return c.json({ error: 'name is required' }, 400);
+	if (name.length > NAME_MAX) return c.json({ error: `Name must be ${NAME_MAX} characters or fewer` }, 400);
+	await c.env.DB.prepare('UPDATE players SET name = ? WHERE id = ?').bind(name, player.id).run();
+	await emit(c.env, player.game_id, { type: 'team_updated', teamId: player.team_id });
+	return c.json({ player: { id: player.id, name, is_leader: player.is_leader === 1 } });
+});
+
 playerRoutes.get('/leaderboard', requirePlayer, async (c) => {
 	return c.json({ leaderboard: await db.leaderboard(c.env.DB, c.get('game').id) });
 });

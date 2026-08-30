@@ -92,7 +92,7 @@ export function Join() {
 			void _token;
 			setJustJoined(true);
 			setState(boot);
-			nav('/how-to-play', { replace: true });
+			nav('/your-name', { replace: true });
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Could not join');
 		} finally {
@@ -196,7 +196,7 @@ export function Join() {
 				{error && <div className="error">{error}</div>}
 				<div className="spacer" />
 				<button ref={nextBtn} className="btn md center" style={{ minWidth: 207, scrollMarginBottom: 24 }} type="submit" disabled={!canSubmit || busy}>
-					{busy ? 'Joining…' : 'Next'}
+					{busy ? 'Joining…' : joiningExisting ? 'Join Team' : 'New Team'}
 				</button>
 			</form>
 		</Screen>

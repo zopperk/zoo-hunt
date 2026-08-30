@@ -118,7 +118,10 @@ export function Profile() {
 				</div>
 			</div>
 
-			<button type="button" className="link mt-l" style={{ alignSelf: 'center' }} onClick={() => nav('/install')}>
+			<button type="button" className="link mt-l" style={{ alignSelf: 'center' }} onClick={() => nav('/your-name')}>
+				✏️ Change my name ({s.player.name})
+			</button>
+			<button type="button" className="link" style={{ alignSelf: 'center' }} onClick={() => nav('/install')}>
 				📲 Add to Home Screen
 			</button>
 			<button

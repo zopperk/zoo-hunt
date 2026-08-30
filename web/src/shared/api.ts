@@ -110,6 +110,7 @@ export const playerApi = {
 	join: (body: { code: string; playerName?: string; teamId?: string; teamName?: string; color?: string }) =>
 		request<Bootstrap & { token: string }>('/api/join', { method: 'POST', body: JSON.stringify(body) }, 'none'),
 	me: () => request<Bootstrap>('/api/me'),
+	renameMe: (name: string) => request<{ player: Bootstrap['player'] }>('/api/me', { method: 'PATCH', body: JSON.stringify({ name }) }),
 	renameTeam: (body: { name?: string; color?: string }) => request<{ team: Bootstrap['team'] }>('/api/team', { method: 'PATCH', body: JSON.stringify(body) }),
 	submit: (clueId: string, photo: Blob, filename = 'find.jpg') => {
 		const fd = new FormData();

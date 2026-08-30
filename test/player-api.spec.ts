@@ -182,6 +182,26 @@ describe('GET /api/me', () => {
 	});
 });
 
+describe('PATCH /api/me', () => {
+	it('lets a player set their own name', async () => {
+		const { game, player } = await fixture();
+		const r = await api('/api/me', { method: 'PATCH', body: json({ name: '  Zaid  ' }) }, bearer(player.token));
+		expect(r.status).toBe(200);
+		expect(r.body.player).toMatchObject({ id: player.player.id, name: 'Zaid' });
+		expect((await api('/api/me', {}, bearer(player.token))).body.player.name).toBe('Zaid');
+		// visible to teammates and the host
+		const admin = await adminHeaders();
+		expect((await api(`/api/admin/teams/${player.team.id}`, {}, admin)).body.players[0].name).toBe('Zaid');
+		void game;
+	});
+	it('validates', async () => {
+		const { player } = await fixture();
+		expect((await api('/api/me', { method: 'PATCH', body: json({ name: '' }) }, bearer(player.token))).status).toBe(400);
+		expect((await api('/api/me', { method: 'PATCH', body: json({ name: 'x'.repeat(41) }) }, bearer(player.token))).status).toBe(400);
+		expect((await api('/api/me', { method: 'PATCH', body: json({ name: 'Nope' }) })).status).toBe(401);
+	});
+});
+
 describe('PATCH /api/team', () => {
 	it('lets the leader rename and recolor', async () => {
 		const { player } = await fixture();
