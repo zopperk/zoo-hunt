@@ -20,6 +20,8 @@
 - [x] No "Your name" on join — random player names, host renames in HQ → team detail (2026-08-30)
 - [ ] **Follow `admin-instructions.md`** for HQ: cream bg, green nav, paper cards, illustrated section headers, large score numbers, chunky controls, small animal accents; photo review as large cards with big green APPROVE / secondary REJECT and "+150 POINTS" score animation; score control with [-50][-10][+10][+50][+100] + custom + reason + AWARD POINTS; playful restrained animations (points bounce, confetti on submit, cards slide in, stamps on completed clues, locked clues wiggle, mascot waves); player viewport 390×844, admin desktop/tablet multi-column.
 
+- [x] Custom domain **https://zoo-hunt.com** (+ www) as Workers custom domains; workers.dev kept as a fallback (2026-08-30)
+
 ## Waiting on user
 - [x] CI API token got **D1: Edit** (2026-08-30) — run 33292163943 migrated + deployed green. Pushes to `main` now deploy on their own.
 
