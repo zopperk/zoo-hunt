@@ -12,8 +12,9 @@ export function Submitted() {
 	if (!clue) return <Navigate to="/clues" replace />;
 	const sub = s.submissions.find((x) => x.clue_id === clue.id && x.status !== 'rejected');
 	const photo = loc.state?.photo ?? sub?.photo_url;
-	const points = loc.state?.points ?? sub?.points_awarded ?? 0;
-	const approved = points > 0 || sub?.status === 'approved';
+	// Live state wins: if the host approved while this screen was open, show the real award.
+	const points = sub?.status === 'approved' ? sub.points_awarded : (loc.state?.points ?? 0);
+	const approved = points > 0;
 
 	return (
 		<Screen>

@@ -6,7 +6,7 @@ import { MagnifierIcon, MapIcon, TrophyIcon, PersonCircleIcon } from '../shared/
 /** Green header bar ("plank"). */
 export function Plank({ children, side, fit }: { children: ReactNode; side?: ReactNode; fit?: boolean }) {
 	return (
-		<div className={`plank ${fit ? 'fit' : ''}`}>
+		<div className={`plank ${fit ? 'fit' : ''} ${side ? 'has-side' : ''}`}>
 			{children}
 			{side && <span className="side">{side}</span>}
 		</div>
