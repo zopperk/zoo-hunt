@@ -22,6 +22,10 @@
 
 - [x] Custom domain **https://zoo-hunt.com** (+ www) as Workers custom domains; workers.dev kept as a fallback (2026-08-30)
 
+- [x] Interactive map: official bronxzoo.com illustration in Leaflet (pinch-zoom/pan), clue pins with popups, GPS "you are here" (calibrated on the four gates), HQ click-to-place picker (2026-08-30)
+  - [ ] Calibrate GPS at the zoo on the day: stand at a gate, confirm the monkey lands on it; nudge `CONTROL_POINTS` in `web/src/shared/zooMap.ts` if off
+  - [ ] Re-check clue pin spots in HQ → Clues against where the animals actually are
+
 ## Waiting on user
 - [x] CI API token got **D1: Edit** (2026-08-30) — run 33292163943 migrated + deployed green. Pushes to `main` now deploy on their own.
 
