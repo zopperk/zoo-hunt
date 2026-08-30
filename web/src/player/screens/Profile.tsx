@@ -118,8 +118,11 @@ export function Profile() {
 				</div>
 			</div>
 
+			<button type="button" className="link mt-l" style={{ alignSelf: 'center' }} onClick={() => nav('/install')}>
+				📲 Add to Home Screen
+			</button>
 			<button
-				className="link mt-l"
+				className="link"
 				style={{ alignSelf: 'center' }}
 				onClick={() => {
 					signOut();

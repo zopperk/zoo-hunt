@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clueStatusLabel, formatPoints } from '../../shared/format';
 import { useGameState } from '../GameContext';
 import { Plank, Screen } from '../components';
+import { InstallBanner } from './Install';
+import { dismissInstallBanner, installBannerDismissed, isStandalone } from '../../shared/install';
 import { QuestionDashedIcon, CameraIcon, CheckCircleIcon, LockIcon, StarIcon } from '../../shared/icons';
 import type { TeamClue } from '../../shared/api';
 
@@ -19,8 +22,17 @@ function StatusIcon({ status }: { status: TeamClue['status'] }) {
 export function Clues() {
 	const s = useGameState();
 	const done = s.clues.filter((c) => c.status === 'complete').length;
+	const [showInstall, setShowInstall] = useState(() => !isStandalone() && !installBannerDismissed());
 	return (
 		<Screen>
+			{showInstall && (
+				<InstallBanner
+					onDismiss={() => {
+						dismissInstallBanner();
+						setShowInstall(false);
+					}}
+				/>
+			)}
 			<div className="sheet" style={{ marginTop: 0 }}>
 				<Plank side={`${done}/${s.clues.length}`}>Clues</Plank>
 				{s.bonus && (

@@ -1133,6 +1133,59 @@ img {
 	cursor: grab;
 }
 
+/* ---------- install (PWA) ---------- */
+.install-banner {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	background: var(--paper-2);
+	border: 1px solid var(--line);
+	border-radius: var(--r-sm);
+	padding: 8px 10px;
+	margin-bottom: var(--gap);
+	font-size: 14px;
+	animation: card-in 0.35s ease both;
+}
+.install-steps {
+	list-style: none;
+	padding: 0;
+	margin: 10px 0 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.install-step {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.4;
+}
+.install-n {
+	flex: none;
+	width: 30px;
+	height: 30px;
+	border-radius: 999px;
+	background: var(--green);
+	color: var(--cream);
+	border: 2px solid var(--green-ink);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--f-display);
+	font-size: 18px;
+}
+/* Running from the Home Screen: respect the notch / status bar. */
+@media (display-mode: standalone) {
+	.screen {
+		padding-top: calc(40px + env(safe-area-inset-top, 0px));
+	}
+	.welcome-title {
+		top: calc(8.6% + env(safe-area-inset-top, 0px) * 0.5);
+	}
+}
+
 /* ---------- animations (playful, restrained) ---------- */
 @keyframes card-in {
 	from {

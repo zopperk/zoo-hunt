@@ -33,7 +33,10 @@ export function HowToPlay() {
 				</div>
 			</div>
 			<div className="spacer" />
-			<button className="btn md center mt-l" style={{ minWidth: 207 }} onClick={() => nav(state ? '/clues' : '/join')}>
+			<button type="button" className="link" style={{ alignSelf: 'center', marginTop: 12 }} onClick={() => nav('/install')}>
+				📲 Add to Home Screen
+			</button>
+			<button className="btn md center" style={{ minWidth: 207, marginTop: 8 }} onClick={() => nav(state ? '/clues' : '/join')}>
 				Next
 			</button>
 		</Screen>

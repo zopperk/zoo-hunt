@@ -4,6 +4,9 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import './styles.css';
 import { PlayerApp } from './player/PlayerApp';
 import { HqApp } from './hq/HqApp';
+import { registerServiceWorker } from './shared/install';
+
+registerServiceWorker();
 
 function HqRedirect() {
 	const loc = useLocation();

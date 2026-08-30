@@ -11,6 +11,7 @@ import { Submitted } from './screens/Submitted';
 import { ZooMap } from './screens/ZooMap';
 import { Scoreboard } from './screens/Scoreboard';
 import { Profile } from './screens/Profile';
+import { Install } from './screens/Install';
 
 function RequireJoined({ children }: { children: React.ReactElement }) {
 	const { state, loading } = useGame();
@@ -35,6 +36,7 @@ export function PlayerApp() {
 					<Route path="/" element={<Welcome />} />
 					<Route path="/how-to-play" element={<HowToPlay />} />
 					<Route path="/join" element={<Join />} />
+					<Route path="/install" element={<Install />} />
 					<Route
 						path="/clues"
 						element={
