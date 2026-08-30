@@ -71,6 +71,29 @@ describe('teams', () => {
 	});
 });
 
+describe('players', () => {
+	it('host can rename a player, toggle leader, and remove them', async () => {
+		const { admin, game, player } = await fixture();
+		const bea = await join(game.code, '', { teamId: player.team.id }); // random name
+		const detail = await api(`/api/admin/teams/${player.team.id}`, {}, admin);
+		const beaRow = detail.body.players.find((p: any) => p.id === bea.player.id);
+		expect(beaRow.name).not.toBe('');
+
+		const renamed = await api(`/api/admin/players/${bea.player.id}`, { method: 'PATCH', body: json({ name: 'Bea', isLeader: true }) }, admin);
+		expect(renamed.status).toBe(200);
+		expect(renamed.body.player).toMatchObject({ name: 'Bea', is_leader: 1 });
+		expect((await api(`/api/admin/players/${bea.player.id}`, { method: 'PATCH', body: json({ name: '' }) }, admin)).status).toBe(400);
+		expect((await api(`/api/admin/players/nope`, { method: 'PATCH', body: json({ name: 'X' }) }, admin)).status).toBe(404);
+
+		// the player sees their new name
+		expect((await api('/api/me', {}, { Authorization: `Bearer ${bea.token}` })).body.player).toMatchObject({ name: 'Bea', is_leader: true });
+
+		expect((await api(`/api/admin/players/${bea.player.id}`, { method: 'DELETE' }, admin)).status).toBe(200);
+		expect((await api('/api/me', {}, { Authorization: `Bearer ${bea.token}` })).status).toBe(401);
+		expect((await api(`/api/admin/teams/${player.team.id}`, {}, admin)).body.players).toHaveLength(1);
+	});
+});
+
 describe('clues', () => {
 	it('adds clues with incrementing order and default points', async () => {
 		const admin = await adminHeaders();

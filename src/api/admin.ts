@@ -253,6 +253,29 @@ adminRoutes.delete('/teams/:id', async (c) => {
 	return c.json({ ok: true });
 });
 
+// ---------- players ----------
+
+adminRoutes.patch('/players/:id', async (c) => {
+	const player = await c.env.DB.prepare('SELECT * FROM players WHERE id = ?').bind(c.req.param('id')).first<db.PlayerRow>();
+	if (!player) return c.json({ error: 'Player not found' }, 404);
+	const body = await c.req.json<{ name?: string; isLeader?: boolean }>().catch(() => null);
+	if (!body) return bad(c, 'Invalid JSON');
+	const name = (body.name ?? player.name).trim();
+	if (!name || name.length > 40) return bad(c, 'name is required (max 40 chars)');
+	const isLeader = body.isLeader === undefined ? player.is_leader : body.isLeader ? 1 : 0;
+	await c.env.DB.prepare('UPDATE players SET name = ?, is_leader = ? WHERE id = ?').bind(name, isLeader, player.id).run();
+	await emit(c.env, player.game_id, { type: 'team_updated', teamId: player.team_id });
+	return c.json({ player: { ...player, name, is_leader: isLeader } });
+});
+
+adminRoutes.delete('/players/:id', async (c) => {
+	const player = await c.env.DB.prepare('SELECT * FROM players WHERE id = ?').bind(c.req.param('id')).first<db.PlayerRow>();
+	if (!player) return c.json({ error: 'Player not found' }, 404);
+	await c.env.DB.prepare('DELETE FROM players WHERE id = ?').bind(player.id).run();
+	await emit(c.env, player.game_id, { type: 'team_updated', teamId: player.team_id });
+	return c.json({ ok: true });
+});
+
 // ---------- clues ----------
 
 adminRoutes.get('/games/:id/clues', async (c) => {

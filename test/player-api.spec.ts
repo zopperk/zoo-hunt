@@ -118,6 +118,18 @@ describe('POST /api/join', () => {
 		expect(r.body.stats).toMatchObject({ points: 0, rank: 1, clues_found: 0 });
 	});
 
+	it('gives players a random "Adjective Animal" name when none is sent', async () => {
+		const admin = await adminHeaders();
+		const game = await createGame(admin);
+		const r = await api('/api/join', { method: 'POST', body: json({ code: game.code, teamName: 'No Names Club' }) });
+		expect(r.status).toBe(201);
+		expect(r.body.player.name).toMatch(/^[A-Z][a-z]+ [A-Z][a-zA-Z ]+$/);
+		const again = await api('/api/join', { method: 'POST', body: json({ code: game.code, teamId: r.body.team.id, playerName: '   ' }) });
+		expect(again.status).toBe(201);
+		expect(again.body.player.name.length).toBeGreaterThan(3);
+		expect(again.body.players).toHaveLength(2);
+	});
+
 	it('joins an existing team as a non-leader', async () => {
 		const { game, player } = await fixture();
 		const r = await api('/api/join', { method: 'POST', body: json({ code: game.code, playerName: 'Bea', teamId: player.team.id }) });
@@ -129,8 +141,8 @@ describe('POST /api/join', () => {
 	it('validates input', async () => {
 		const { game } = await fixture();
 		expect((await api('/api/join', { method: 'POST', body: 'nope' })).status).toBe(400);
-		expect((await api('/api/join', { method: 'POST', body: json({ code: game.code }) })).status).toBe(400);
-		expect((await api('/api/join', { method: 'POST', body: json({ code: game.code, playerName: 'A' }) })).status).toBe(400);
+		expect((await api('/api/join', { method: 'POST', body: json({ playerName: 'A', teamName: 'T' }) })).status).toBe(400); // no code
+		expect((await api('/api/join', { method: 'POST', body: json({ code: game.code, playerName: 'A' }) })).status).toBe(400); // no team
 		expect((await api('/api/join', { method: 'POST', body: json({ code: game.code, playerName: 'x'.repeat(41), teamName: 'T' }) })).status).toBe(400);
 		expect((await api('/api/join', { method: 'POST', body: json({ code: 'ZZZ-9999', playerName: 'A', teamName: 'T' }) })).status).toBe(404);
 		expect((await api('/api/join', { method: 'POST', body: json({ code: game.code, playerName: 'A', teamId: 'missing' }) })).status).toBe(404);

@@ -14,6 +14,14 @@ export const playerRoutes = new Hono<Ctx>();
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 const NAME_MAX = 40;
 
+const NAME_ADJ = ['Curious', 'Sneaky', 'Bouncy', 'Sleepy', 'Mighty', 'Giggly', 'Speedy', 'Fuzzy', 'Brave', 'Cheeky', 'Dizzy', 'Jolly', 'Wobbly', 'Zippy', 'Snappy', 'Sunny'];
+const NAME_ANIMAL = ['Capybara', 'Sloth', 'Meerkat', 'Penguin', 'Giraffe', 'Zebra', 'Hippo', 'Lemur', 'Otter', 'Toucan', 'Red Panda', 'Gorilla', 'Flamingo', 'Sea Lion', 'Tiger', 'Peacock'];
+/** "Curious Capybara" style names for players who don't type one. */
+export function randomPlayerName(): string {
+	const pick = (arr: readonly string[]) => arr[Math.floor(Math.random() * arr.length)];
+	return `${pick(NAME_ADJ)} ${pick(NAME_ANIMAL)}`;
+}
+
 export const requirePlayer = createMiddleware<Ctx>(async (c, next) => {
 	const auth = c.req.header('Authorization') ?? '';
 	const token = auth.startsWith('Bearer ') ? auth.slice(7) : c.req.query('token');
@@ -112,8 +120,9 @@ playerRoutes.post('/join', async (c) => {
 	const body = await c.req.json<{ code?: string; playerName?: string; teamId?: string; teamName?: string; color?: string }>().catch(() => null);
 	if (!body) return c.json({ error: 'Invalid JSON' }, 400);
 	const code = (body.code ?? '').trim().toUpperCase();
-	const playerName = (body.playerName ?? '').trim();
-	if (!code || !playerName) return c.json({ error: 'code and playerName are required' }, 400);
+	// Players don't type a name — they get a fun random one the host can change in HQ.
+	const playerName = (body.playerName ?? '').trim() || randomPlayerName();
+	if (!code) return c.json({ error: 'code is required' }, 400);
 	if (playerName.length > NAME_MAX) return c.json({ error: `Name must be ${NAME_MAX} characters or fewer` }, 400);
 
 	const game = await db.getGameByCode(c.env.DB, code);

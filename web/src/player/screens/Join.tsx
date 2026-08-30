@@ -6,7 +6,6 @@ import { useGame } from '../GameContext';
 import { Screen, TeamTile } from '../components';
 
 const REMEMBER_CODE = 'zoo-hunt:code';
-const REMEMBER_NAME = 'zoo-hunt:name';
 const COLORS = ['yellow', 'green', 'blue', 'red', 'purple', 'orange'];
 
 function remembered(key: string): string {
@@ -26,7 +25,6 @@ export function Join() {
 	const [editingCode, setEditingCode] = useState(false);
 	const [game, setGame] = useState<PublicGame | null>(null);
 	const [lookupError, setLookupError] = useState<string | null>(null);
-	const [playerName, setPlayerName] = useState(() => remembered(REMEMBER_NAME));
 	const [teamName, setTeamName] = useState('');
 	const [color, setColor] = useState<string>('yellow');
 	const [teamId, setTeamId] = useState<string | null>(null);
@@ -63,7 +61,7 @@ export function Join() {
 	}, [code]);
 
 	const joiningExisting = !!teamId;
-	const canSubmit = !!game && game.game.status !== 'ended' && playerName.trim().length > 0 && (joiningExisting || isValidTeamName(teamName));
+	const canSubmit = !!game && game.game.status !== 'ended' && (joiningExisting || isValidTeamName(teamName));
 
 	async function submit(e: FormEvent) {
 		e.preventDefault();
@@ -73,13 +71,11 @@ export function Join() {
 		try {
 			const res = await playerApi.join({
 				code: game.game.code,
-				playerName: playerName.trim(),
 				...(joiningExisting ? { teamId: teamId! } : { teamName: teamName.trim(), color }),
 			});
 			tokenStore.set(res.token);
 			try {
 				localStorage.setItem(REMEMBER_CODE, game.game.code);
-				localStorage.setItem(REMEMBER_NAME, playerName.trim());
 			} catch {
 				/* ignore */
 			}
@@ -105,20 +101,17 @@ export function Join() {
 					</p>
 				</div>
 
-				<div className="stack" style={{ gap: 10 }}>
-					<input
-						className="input"
-						value={teamName}
-						onChange={(e) => {
-							setTeamName(e.target.value);
-							setTeamId(null);
-						}}
-						placeholder="Team name"
-						maxLength={40}
-						aria-label="Team name"
-					/>
-					<input className="input" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Your name" maxLength={40} required aria-label="Your name" />
-				</div>
+				<input
+					className="input"
+					value={teamName}
+					onChange={(e) => {
+						setTeamName(e.target.value);
+						setTeamId(null);
+					}}
+					placeholder="Team name"
+					maxLength={40}
+					aria-label="Team name"
+				/>
 
 				<div className="tile-grid" role="radiogroup" aria-label="Team color" style={{ marginTop: 6 }}>
 					{COLORS.map((c) => (

@@ -106,6 +106,8 @@ export const adminApi = {
 	addTeam: (id: string, body: { name: string; color?: string }) => a(`/games/${id}/teams`, post(body)),
 	team: (teamId: string) => a<TeamDetail>(`/teams/${teamId}`),
 	patchTeam: (teamId: string, body: { name?: string; color?: string }) => a(`/teams/${teamId}`, patch(body)),
+	patchPlayer: (playerId: string, body: { name?: string; isLeader?: boolean }) => a(`/players/${playerId}`, patch(body)),
+	deletePlayer: (playerId: string) => a(`/players/${playerId}`, { method: 'DELETE' }),
 	deleteTeam: (teamId: string) => a(`/teams/${teamId}`, { method: 'DELETE' }),
 
 	clues: (id: string) => a<{ clues: AdminClue[] }>(`/games/${id}/clues`),

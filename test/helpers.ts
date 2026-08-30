@@ -49,7 +49,7 @@ export async function addClue(admin: Record<string, string>, gameId: string, ove
 }
 
 export async function join(code: string, playerName: string, team: { teamName?: string; teamId?: string; color?: string }) {
-	const r = await api('/api/join', { method: 'POST', body: json({ code, playerName, ...team }) });
+	const r = await api('/api/join', { method: 'POST', body: json({ code, ...(playerName ? { playerName } : {}), ...team }) });
 	if (r.status !== 201) throw new Error(`join failed: ${r.status} ${JSON.stringify(r.body)}`);
 	return r.body as { token: string; team: { id: string; name: string; color: string }; player: { id: string; is_leader: boolean } } & Record<string, any>;
 }

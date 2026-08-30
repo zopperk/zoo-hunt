@@ -113,6 +113,7 @@ export function TeamDetailPanel() {
 	const [custom, setCustom] = useState('');
 	const [reason, setReason] = useState('');
 	const [editName, setEditName] = useState<string | null>(null);
+	const [editPlayer, setEditPlayer] = useState<{ id: string; name: string } | null>(null);
 
 	if (error) return <div className="hq-panel error">{error}</div>;
 	if (!data) return <div className="spinner" />;
@@ -132,6 +133,25 @@ export function TeamDetailPanel() {
 		} catch (err) {
 			toast(err instanceof Error ? err.message : 'Failed');
 		}
+	}
+
+	async function savePlayer() {
+		if (!editPlayer || !editPlayer.name.trim()) return;
+		try {
+			await adminApi.patchPlayer(editPlayer.id, { name: editPlayer.name.trim() });
+			setEditPlayer(null);
+			await reload();
+			toast('Player renamed', 'good');
+		} catch (err) {
+			toast(err instanceof Error ? err.message : 'Failed');
+		}
+	}
+
+	async function removePlayer(id: string, name: string) {
+		if (!window.confirm(`Remove ${name} from the team?`)) return;
+		await adminApi.deletePlayer(id);
+		await reload();
+		await refresh();
 	}
 
 	async function saveName() {
@@ -193,13 +213,34 @@ export function TeamDetailPanel() {
 			<div className="hq-grid cols-3 mt">
 				<div className="hq-panel">
 					<div className="eyebrow mb">Team members</div>
+					<div className="tiny muted mb">Players get a random name when they join — rename them here.</div>
 					<ul className="activity">
 						{players.map((p) => (
-							<li key={p.id}>
-								<span>
-									{p.name} {p.is_leader ? <span className="pill approved">leader</span> : null}
-								</span>
-								<time>seen {timeAgo(p.last_seen_at)}</time>
+							<li key={p.id} style={{ alignItems: 'center' }}>
+								{editPlayer?.id === p.id ? (
+									<span className="row grow">
+										<input className="input" style={{ ...dense, padding: '6px 10px' }} value={editPlayer.name} onChange={(e) => setEditPlayer({ id: p.id, name: e.target.value })} maxLength={40} autoFocus aria-label="Player name" />
+										<button className="btn xs" onClick={savePlayer}>
+											Save
+										</button>
+										<button className="btn xs ghost" onClick={() => setEditPlayer(null)}>
+											Cancel
+										</button>
+									</span>
+								) : (
+									<>
+										<span className="grow">
+											{p.name} {p.is_leader ? <span className="pill approved">leader</span> : null}
+										</span>
+										<button className="btn xs ghost" onClick={() => setEditPlayer({ id: p.id, name: p.name })}>
+											Rename
+										</button>
+										<button className="btn xs ghost orange" aria-label={`Remove ${p.name}`} onClick={() => removePlayer(p.id, p.name)}>
+											✕
+										</button>
+										<time>seen {timeAgo(p.last_seen_at)}</time>
+									</>
+								)}
 							</li>
 						))}
 					</ul>
