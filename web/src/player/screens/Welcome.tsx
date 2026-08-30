@@ -20,7 +20,7 @@ export function Welcome() {
 					Hunt!
 				</span>
 			</h1>
-			<img className="mascot" src="/art/george-jump.png" alt="" />
+			<img className="mascot" src="/art/george-welcome.png" alt="" />
 			{!loading && (
 				<button className="btn orange cta" onClick={() => nav(state ? '/clues' : '/join')}>
 					Let’s go!

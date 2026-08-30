@@ -709,12 +709,12 @@ img {
 	line-height: 1.02;
 }
 .welcome .mascot {
-	/* 720×720 leaping George, matched to frame 01: head centred ≈ (45%, 56%) of the screen,
-	   right hand reaching the gate pillar, left hand and feet cropped by the edges */
+	/* 2607×1466 dancing George (frame 01's "image 13"): head centred ≈ (40%, 56%) of the
+	   screen, right hand at the gate pillar (~95%, 48%), left hand + feet cropped by the edges */
 	position: absolute;
-	left: -62%;
-	bottom: -26%;
-	width: 208%;
+	left: -70%;
+	bottom: -10%;
+	width: 250%;
 	max-width: none;
 	pointer-events: none;
 	animation: wave 3.2s ease-in-out infinite;
