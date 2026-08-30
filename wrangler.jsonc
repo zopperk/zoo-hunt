@@ -11,6 +11,13 @@
 	"observability": { "enabled": true },
 	"upload_source_maps": true,
 
+	// Custom domain (zone must be on this Cloudflare account). workers.dev stays enabled too.
+	"workers_dev": true,
+	"routes": [
+		{ "pattern": "zoo-hunt.com", "custom_domain": true },
+		{ "pattern": "www.zoo-hunt.com", "custom_domain": true }
+	],
+
 	// Vite build of the player app + Game Master HQ. API/WS paths bypass assets.
 	"assets": {
 		"directory": "./web/dist",
