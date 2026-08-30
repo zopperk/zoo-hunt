@@ -13,7 +13,7 @@
   - [ ] Snap / Nice shot / Scoreboard / Team profile / Map to match their frames
   - [ ] Bottom nav icons matching the SF-Symbols glyphs used in Figma (search, map, trophy, person)
 
-- [x] **Admin at `/admin`** (keep `/hq` redirecting) with password **zaid-is-awesome** (secret set remotely ✅ + .dev.vars ✅)
+- [x] **Admin at `/admin`** (keep `/hq` redirecting) with password **zaid29** (secret set remotely ✅ + .dev.vars ✅)
 - [x] Fonts/colors/icons from Figma: Ranchers + Libre Franklin + Victor Mono, exact hex palette, SF-symbol-style icons, art exported (gate, Georges, monkey head, map, textures)
 - [ ] Iterate on http://localhost:8788 (user's wrangler dev) — rebuild with `npm run build:web`, reload
 - [x] Welcome: George sized by screen height + moved down on short screens; cream wash under title; heavier drop shadows (2026-08-30)
