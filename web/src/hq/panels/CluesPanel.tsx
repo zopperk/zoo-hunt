@@ -4,6 +4,7 @@ import { ClockIcon, LockIcon, XIcon } from '../../shared/icons';
 import { adminApi, type AdminClue } from '../api';
 import { useHq, useHqData } from '../HqApp';
 import { Empty, Field, PanelHeader, dense } from '../components';
+import { MapPicker } from '../MapPicker';
 
 const blank = { title: '', body: '', animal: '', points: '', mapX: '', mapY: '' };
 
@@ -35,8 +36,8 @@ export function CluesPanel() {
 		e.preventDefault();
 		const payload: Record<string, unknown> = { title: form.title, body: form.body, animal: form.animal };
 		if (form.points !== '') payload.points = Number(form.points);
-		if (form.mapX !== '') payload.mapX = Number(form.mapX);
-		if (form.mapY !== '') payload.mapY = Number(form.mapY);
+		payload.mapX = form.mapX !== '' ? Number(form.mapX) : null;
+		payload.mapY = form.mapY !== '' ? Number(form.mapY) : null;
 		await act(
 			() => (editing ? adminApi.patchClue(editing, payload) : adminApi.addClue(gameId, payload)),
 			editing ? 'Clue updated' : 'Clue added',
@@ -176,11 +177,25 @@ export function CluesPanel() {
 					<textarea className="textarea" style={{ ...dense, fontFamily: 'var(--f-mono)', fontWeight: 500 }} value={form.body} onChange={set('body')} required placeholder="My imposing stature makes it tough to seek shelter in rain…" />
 				</Field>
 				<div className="hq-grid cols-3">
-					<Field label="Map X (0–1, optional)">
-						<input className="input" style={dense} type="number" step="0.01" min={0} max={1} value={form.mapX} onChange={set('mapX')} />
-					</Field>
-					<Field label="Map Y (0–1, optional)">
-						<input className="input" style={dense} type="number" step="0.01" min={0} max={1} value={form.mapY} onChange={set('mapY')} />
+					<Field label="Map position" style={{ gridColumn: 'span 2' }}>
+						<div className="tiny muted" style={{ marginBottom: 6 }}>
+							{form.mapX !== '' && form.mapY !== '' ? (
+								<>
+									Pinned at {Number(form.mapX).toFixed(3)}, {Number(form.mapY).toFixed(3)} — click or drag the ★ to move it.{' '}
+									<button type="button" className="link" style={{ padding: '0 4px', fontSize: 12 }} onClick={() => setForm((f) => ({ ...f, mapX: '', mapY: '' }))}>
+										clear
+									</button>
+								</>
+							) : (
+								'Click the map where this animal lives. Other clues are shown greyed.'
+							)}
+						</div>
+						<MapPicker
+							value={form.mapX !== '' && form.mapY !== '' ? { x: Number(form.mapX), y: Number(form.mapY) } : null}
+							onChange={(p) => setForm((f) => ({ ...f, mapX: String(p.x), mapY: String(p.y) }))}
+							others={clues.filter((c) => c.id !== editing && c.map_x !== null && c.map_y !== null).map((c) => ({ id: c.id, x: c.map_x!, y: c.map_y!, label: String(c.sort_order), dim: true }))}
+							height={360}
+						/>
 					</Field>
 					<div className="field" style={{ justifyContent: 'flex-end' }}>
 						<div className="row">
