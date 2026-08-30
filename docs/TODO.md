@@ -26,6 +26,8 @@
   - [ ] Calibrate GPS at the zoo on the day: stand at a gate, confirm the monkey lands on it; nudge `CONTROL_POINTS` in `web/src/shared/zooMap.ts` if off
   - [ ] Re-check clue pin spots in HQ → Clues against where the animals actually are
 
+- [x] PWA: manifest + icons + service worker (offline shell), standalone full-screen; `/install` guide for iPhone/Android, install banner on Clues (2026-08-30)
+
 ## Waiting on user
 - [x] CI API token got **D1: Edit** (2026-08-30) — run 33292163943 migrated + deployed green. Pushes to `main` now deploy on their own.
 
