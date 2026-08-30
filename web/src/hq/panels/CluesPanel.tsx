@@ -67,7 +67,7 @@ export function CluesPanel() {
 				) : clues.length === 0 ? (
 					<Empty>No clues yet. Add your first clue below.</Empty>
 				) : (
-					<div style={{ overflowX: 'auto' }}>
+					<div className="table-wrap">
 						<table className="table">
 							<thead>
 								<tr>
@@ -89,9 +89,7 @@ export function CluesPanel() {
 										</td>
 										<td>
 											<div>{c.title}</div>
-											<div className="tiny muted" style={{ maxWidth: 320, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 500 }}>
-												{c.body}
-											</div>
+											<div className="tiny muted clue-preview">{c.body}</div>
 										</td>
 										<td>{c.animal || '—'}</td>
 										<td>{c.points}</td>

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { ApiError } from '../shared/api';
 import { useSocket } from '../shared/useSocket';
 import { CameraIcon, ChartIcon, GearIcon, ListIcon, MagnifierIcon, PersonCircleIcon, StarIcon, TrophyIcon } from '../shared/icons';
@@ -179,8 +179,14 @@ function GamePicker({ onPick }: { onPick: (id: string) => void }) {
 function Shell({ children }: { children: ReactNode }) {
 	const { overview, switchGame, refresh, toast } = useHq();
 	const nav = useNavigate();
+	const navRef = useRef<HTMLElement>(null);
+	const { pathname } = useLocation();
 	const pending = overview?.stats.photos_pending ?? 0;
 	const cls = ({ isActive }: { isActive: boolean }) => (isActive ? 'active' : '');
+	// On narrow screens the nav is a horizontal strip; keep the current panel's tab in view.
+	useEffect(() => {
+		navRef.current?.querySelector('a.active')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+	}, [pathname]);
 	async function endGame() {
 		if (!overview) return;
 		const next = overview.game.status === 'ended' ? 'live' : 'ended';
@@ -197,7 +203,7 @@ function Shell({ children }: { children: ReactNode }) {
 						<small>Game master</small>HQ
 					</div>
 				</div>
-				<nav className="hq-nav">
+				<nav className="hq-nav" ref={navRef}>
 					<NavLink to="/admin" end className={cls}>
 						<ChartIcon /> Overview
 					</NavLink>

@@ -1340,6 +1340,13 @@ img {
 	width: 24px;
 	height: 21px;
 	object-fit: contain;
+	flex: 0 0 auto;
+}
+.chip .nm {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 .photo-grid {
 	display: grid;
@@ -1389,6 +1396,14 @@ img {
 	grid-template-columns: 2fr 1fr;
 	gap: 8px;
 	margin-top: 4px;
+}
+/* Clue body preview in the clues table — truncates so the status/action columns stay reachable. */
+.clue-preview {
+	max-width: 320px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-weight: 500;
 }
 .activity {
 	list-style: none;
@@ -1470,27 +1485,202 @@ img {
 	color: var(--muted);
 	font-weight: 600;
 }
+/* Horizontal scroll container for wide tables, so the page itself never scrolls sideways. */
+.table-wrap {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	overscroll-behavior-x: contain;
+}
+
+/* ---------- HQ responsive ---------- */
+
+/* Tablet / small laptop: the sidebar becomes a sticky top bar. */
 @media (max-width: 860px) {
 	.hq {
 		grid-template-columns: 1fr;
+		grid-template-rows: auto 1fr;
 	}
 	.hq-side {
-		position: static;
+		min-width: 0;
+		position: sticky;
+		top: 0;
+		z-index: 30;
 		height: auto;
 		border-right: 0;
 		border-bottom: 2px solid var(--green-ink);
+		flex-flow: row wrap;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 12px;
 	}
-	.hq-nav {
-		flex-direction: row;
-		flex-wrap: wrap;
+	.hq-side .brand {
+		order: 1;
+		font-size: 30px;
+		margin-bottom: 0;
+		gap: 8px;
 	}
-	.hq-nav a,
-	.hq-nav button {
+	.hq-side .brand img {
+		width: 38px;
+		height: 34px;
+	}
+	.hq-side .brand small {
+		font-size: 10px;
+		letter-spacing: 0.1em;
+		margin-bottom: 2px;
+	}
+	/* The flex spacer that pushes the footer actions down in the sidebar layout. */
+	.hq-side > div:not(.brand):not(.hq-nav) {
+		display: none;
+	}
+	.hq-side > .btn {
+		order: 2;
 		width: auto;
+		margin-left: auto;
+	}
+	.hq-side > div.hq-nav {
+		order: 3;
+		flex: 0 1 auto;
+		flex-direction: row;
+		gap: 2px;
+		margin-top: 0 !important;
+	}
+	.hq-side > div.hq-nav button {
+		padding: 8px 10px;
+		font-size: 11px;
+	}
+	/* Main nav: one row that scrolls sideways instead of wrapping into a ragged block. */
+	.hq-side > nav.hq-nav {
+		order: 4;
+		flex: 0 0 100%;
+		min-width: 0;
+		flex-flow: row nowrap;
+		gap: 4px;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		margin: 0 -12px;
+		padding: 2px 12px;
+	}
+	.hq-side > nav.hq-nav::-webkit-scrollbar {
+		display: none;
+	}
+	.hq-side > nav.hq-nav a {
+		width: auto;
+		flex: 0 0 auto;
+		white-space: nowrap;
 	}
 	.hq-grid.cols-2,
 	.hq-grid.cols-3,
 	.hq-grid.cols-4 {
 		grid-template-columns: 1fr 1fr;
+	}
+	.hq-main {
+		padding: 16px 16px 40px;
+	}
+}
+
+/* Phone: single column, smaller display type, tighter padding. */
+@media (max-width: 560px) {
+	.hq-grid.cols-2,
+	.hq-grid.cols-3 {
+		grid-template-columns: 1fr;
+	}
+	.hq-grid.cols-4 {
+		grid-template-columns: 1fr 1fr;
+	}
+	.hq-main {
+		padding: 12px 12px 40px;
+	}
+	.hq-panel {
+		padding: 14px;
+	}
+	.hq-panel + .hq-panel {
+		margin-top: 12px;
+	}
+	.hq-grid {
+		gap: 12px;
+	}
+	.hq-head {
+		margin-bottom: 12px;
+	}
+	.hq-head h1 {
+		font-size: 30px;
+	}
+	.hq-head .sub {
+		font-size: 13px;
+	}
+	.hq-tile {
+		padding: 11px;
+	}
+	.hq-tile .k {
+		font-size: 11px;
+		letter-spacing: 0.06em;
+	}
+	.hq-tile .v {
+		font-size: 32px;
+	}
+	.big-score {
+		font-size: 58px;
+	}
+	.code-box {
+		font-size: 22px;
+		letter-spacing: 0.1em;
+	}
+	.preset-row {
+		grid-template-columns: repeat(3, 1fr);
+	}
+	.photo-grid {
+		grid-template-columns: 1fr;
+	}
+	.empty {
+		padding: 20px 14px;
+	}
+	/* Let the table scroll edge-to-edge inside the panel's padding. */
+	.table-wrap {
+		margin: 0 -14px;
+		padding: 0 14px;
+	}
+	.table th {
+		white-space: nowrap;
+	}
+	.clue-preview {
+		max-width: 150px;
+	}
+	/* Squeeze the bar onto two rows: brand + actions, then the nav strip. */
+	.hq-side {
+		gap: 6px;
+		padding: 8px 12px;
+	}
+	.hq-side .brand {
+		font-size: 26px;
+	}
+	.hq-side .brand small {
+		display: none;
+	}
+	.hq-side .brand img {
+		width: 32px;
+		height: 29px;
+	}
+	.hq-side > .btn {
+		font-size: 13px;
+		min-height: 36px;
+		padding: 6px 12px;
+	}
+	.hq-side > div.hq-nav button {
+		font-size: 10px;
+		padding: 6px 7px;
+		letter-spacing: 0.04em;
+	}
+}
+
+/* Touch: the table-row actions are too small to hit reliably with a thumb. */
+@media (pointer: coarse) {
+	.btn.xs {
+		min-height: 38px;
+		padding: 6px 12px;
+	}
+	.hq-nav a,
+	.hq-nav button {
+		padding: 11px 12px;
 	}
 }

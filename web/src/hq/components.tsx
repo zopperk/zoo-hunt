@@ -29,7 +29,7 @@ export function TeamChip({ name, color }: { name: string; color: string }) {
 	return (
 		<span className={`chip team-${color}`}>
 			<img src="/art/monkey-head.png" alt="" />
-			{name}
+			<span className="nm">{name}</span>
 		</span>
 	);
 }

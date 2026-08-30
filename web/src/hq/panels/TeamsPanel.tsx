@@ -58,45 +58,47 @@ export function TeamsPanel() {
 			) : data.teams.length === 0 ? (
 				<Empty>No teams yet. Players create teams when they join, or add one here.</Empty>
 			) : (
-				<table className="table">
-					<thead>
-						<tr>
-							<th>Team</th>
-							<th>Players</th>
-							<th>Points</th>
-							<th>Clues found</th>
-							<th>Photos</th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody>
-						{data.teams.map((t) => (
-							<tr key={t.id}>
-								<td>
-									<Link to={`/admin/teams/${t.id}`} style={{ textDecoration: 'none' }}>
-										<TeamChip name={t.name} color={t.color} />
-									</Link>
-								</td>
-								<td>{t.players}</td>
-								<td className="display" style={{ fontSize: 22, color: 'var(--green)' }}>
-									{formatPoints(t.points)}
-								</td>
-								<td>{t.clues_found}</td>
-								<td>{t.photos_submitted}</td>
-								<td>
-									<div className="row" style={{ justifyContent: 'flex-end' }}>
-										<Link to={`/admin/teams/${t.id}`} className="btn xs ghost">
-											View
-										</Link>
-										<button className="btn xs ghost orange" onClick={() => remove(t.id, t.name)}>
-											Remove
-										</button>
-									</div>
-								</td>
+				<div className="table-wrap">
+					<table className="table">
+						<thead>
+							<tr>
+								<th>Team</th>
+								<th>Players</th>
+								<th>Points</th>
+								<th>Clues found</th>
+								<th>Photos</th>
+								<th></th>
 							</tr>
-						))}
-					</tbody>
-				</table>
+						</thead>
+						<tbody>
+							{data.teams.map((t) => (
+								<tr key={t.id}>
+									<td>
+										<Link to={`/admin/teams/${t.id}`} style={{ textDecoration: 'none' }}>
+											<TeamChip name={t.name} color={t.color} />
+										</Link>
+									</td>
+									<td>{t.players}</td>
+									<td className="display" style={{ fontSize: 22, color: 'var(--green)' }}>
+										{formatPoints(t.points)}
+									</td>
+									<td>{t.clues_found}</td>
+									<td>{t.photos_submitted}</td>
+									<td>
+										<div className="row" style={{ justifyContent: 'flex-end' }}>
+											<Link to={`/admin/teams/${t.id}`} className="btn xs ghost">
+												View
+											</Link>
+											<button className="btn xs ghost orange" onClick={() => remove(t.id, t.name)}>
+												Remove
+											</button>
+										</div>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
 			)}
 		</div>
 	);
