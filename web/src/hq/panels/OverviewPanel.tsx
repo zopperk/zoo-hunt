@@ -1,8 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { formatPoints, timeAgo, clock } from '../../shared/format';
+import { CameraIcon, MagnifierIcon, StarIcon, TrophyIcon } from '../../shared/icons';
 import { adminApi } from '../api';
 import { useHq } from '../HqApp';
 import { TeamChip } from '../components';
+
+const ic = { width: 18, height: 18 };
 
 export function OverviewPanel() {
 	const { overview, refresh, toast } = useHq();
@@ -23,14 +26,12 @@ export function OverviewPanel() {
 	return (
 		<>
 			<div className="hq-panel">
-				<div className="row between wrap">
+				<div className="hq-head">
 					<div>
-						<h1 className="title-l c-green">{game.name}</h1>
-						<div className="row gap small">
+						<h1>{game.name}</h1>
+						<div className="row sub">
 							<span className={`pill ${game.status}`}>{game.status === 'live' ? '● Live' : game.status}</span>
-							<span className="muted">
-								{game.starts_at ? `Starts ${clock(game.starts_at)}` : `Created ${new Date(game.created_at).toLocaleDateString()}`}
-							</span>
+							<span>{game.starts_at ? `Starts ${clock(game.starts_at)}` : `Created ${new Date(game.created_at).toLocaleDateString()}`}</span>
 						</div>
 					</div>
 					<div className="tc">
@@ -38,7 +39,7 @@ export function OverviewPanel() {
 						<div className="code-box">
 							{game.code}
 							<button
-								className="btn xs yellow"
+								className="btn xs orange"
 								onClick={() => {
 									navigator.clipboard?.writeText(`${location.origin}/join?code=${game.code}`);
 									toast('Join link copied', 'good');
@@ -50,7 +51,7 @@ export function OverviewPanel() {
 					</div>
 				</div>
 
-				<div className="hq-grid cols-4 mt-l">
+				<div className="hq-grid cols-4">
 					<div className="hq-tile">
 						<div className="k">Teams</div>
 						<div className="v">{stats.teams}</div>
@@ -70,7 +71,7 @@ export function OverviewPanel() {
 					</div>
 					<div className="hq-tile">
 						<div className="k">Photos pending</div>
-						<div className="v" style={{ color: stats.photos_pending ? 'var(--red)' : undefined }}>
+						<div className="v" style={{ color: stats.photos_pending ? 'var(--orange)' : undefined }}>
 							{stats.photos_pending}
 						</div>
 						<div className="s">to review</div>
@@ -81,10 +82,10 @@ export function OverviewPanel() {
 			<div className="hq-grid cols-3 mt">
 				<div className="hq-panel">
 					<div className="eyebrow mb">Live leaderboard</div>
-					{leaderboard.length === 0 && <div className="muted small">No teams yet.</div>}
-					<div className="list">
+					{leaderboard.length === 0 && <div className="empty">No teams yet.</div>}
+					<div className="stack">
 						{leaderboard.map((t) => (
-							<Link key={t.id} to={`/hq/teams/${t.id}`} className={`team-row team-${t.color}`} style={{ textDecoration: 'none' }}>
+							<Link key={t.id} to={`/admin/teams/${t.id}`} className={`team-row team-${t.color}`} style={{ textDecoration: 'none' }}>
 								<span className="rank">{t.rank}</span>
 								<span className="name">{t.name}</span>
 								<span className="pts">{formatPoints(t.points)}</span>
@@ -94,7 +95,7 @@ export function OverviewPanel() {
 				</div>
 				<div className="hq-panel">
 					<div className="eyebrow mb">Recent activity</div>
-					<ul className="activity" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+					<ul className="activity">
 						{activity.slice(0, 8).map((a) => (
 							<li key={a.id}>
 								<span>{a.message}</span>
@@ -103,28 +104,28 @@ export function OverviewPanel() {
 						))}
 						{activity.length === 0 && <li className="muted">Nothing yet.</li>}
 					</ul>
-					<Link to="/hq/activity" className="link">
+					<Link to="/admin/activity" className="link" style={{ paddingLeft: 0 }}>
 						View all activity
 					</Link>
 				</div>
 				<div className="hq-panel">
 					<div className="eyebrow mb">Quick actions</div>
-					<div className="list">
+					<div className="stack">
 						<button className="btn sm block" onClick={releaseNext}>
-							Release next clue
+							<MagnifierIcon {...ic} /> Release next clue
 						</button>
-						<button className="btn sm block yellow" onClick={() => nav('/hq/review')}>
-							Photo review {stats.photos_pending > 0 && `(${stats.photos_pending})`}
+						<button className="btn sm block orange" onClick={() => nav('/admin/review')}>
+							<CameraIcon {...ic} /> Photo review {stats.photos_pending > 0 && `(${stats.photos_pending})`}
 						</button>
-						<button className="btn sm block ghost" onClick={() => nav('/hq/scores')}>
-							Adjust scores
+						<button className="btn sm block ghost" onClick={() => nav('/admin/scores')}>
+							<TrophyIcon {...ic} /> Adjust scores
 						</button>
-						<button className="btn sm block ghost" onClick={() => nav('/hq/bonus')}>
-							Bonus challenge
+						<button className="btn sm block ghost" onClick={() => nav('/admin/bonus')}>
+							<StarIcon {...ic} /> Bonus challenge
 						</button>
 					</div>
 					{leaderboard[0] && (
-						<div className="mt small">
+						<div className="mt small row">
 							Leading: <TeamChip name={leaderboard[0].name} color={leaderboard[0].color} />
 						</div>
 					)}

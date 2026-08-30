@@ -1,49 +1,31 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useGame } from '../GameContext';
-import { Screen } from '../components';
 
+/**
+ * Frame 01-welcome (235×512 → 390×850):
+ * gate painting fills the screen, "ZAID TURNS 29" (green) over "SCAVENGER HUNT!" (orange)
+ * across the sky, George leaping in from the bottom-left, LET'S GO at ~80% height.
+ */
 export function Welcome() {
 	const { state, loading } = useGame();
 	const nav = useNavigate();
+	const eyebrow = state?.game.name.split(/[—–]/)[0]?.trim() || 'Zaid turns 29';
 	return (
-		<Screen nav={false} center>
-			<div style={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center' }}>
-				<div className="eyebrow" style={{ fontSize: 16, color: 'var(--red)' }}>
-					{state?.game.name?.split('—')[0]?.trim() || 'Zaid turns 29'}
-				</div>
-				<h1 className="title-xl">
-					<span className="c-green">Bronx Zoo</span>
+		<main className="welcome">
+			<h1 className="welcome-title">
+				<span className="t1">{eyebrow}</span>
+				<span className="t2">
+					Scavenger
 					<br />
-					<span className="c-red">Scavenger</span>
-					<br />
-					<span className="c-green">Hunt!</span>
-				</h1>
-				<div className="monkey" aria-hidden>
-					🐵📸
-				</div>
-				<div className="card soft type small" style={{ maxWidth: 300 }}>
-					Solve the clues, find the animals, snap a team selfie, and rack up points. Top team wins a prize!
-				</div>
-				{loading ? null : state ? (
-					<>
-						<button className="btn red block" onClick={() => nav('/clues')}>
-							Let’s go, {state.team.name}!
-						</button>
-						<Link to="/how-to-play" className="link">
-							How to play
-						</Link>
-					</>
-				) : (
-					<>
-						<button className="btn red block" onClick={() => nav('/join')}>
-							Let’s go!
-						</button>
-						<Link to="/how-to-play" className="link">
-							How to play
-						</Link>
-					</>
-				)}
-			</div>
-		</Screen>
+					Hunt!
+				</span>
+			</h1>
+			<img className="mascot" src="/art/george-jump.png" alt="" />
+			{!loading && (
+				<button className="btn orange cta" onClick={() => nav(state ? '/clues' : '/join')}>
+					Let’s go!
+				</button>
+			)}
+		</main>
 	);
 }

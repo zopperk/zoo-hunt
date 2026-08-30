@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { adminApi } from '../api';
 import { useHq } from '../HqApp';
-import { PanelHeader } from '../components';
+import { Field, PanelHeader, dense } from '../components';
 
 function toLocal(ms: number | null): string {
 	if (!ms) return '';
@@ -51,13 +51,12 @@ export function SettingsPanel() {
 	}
 
 	return (
-		<form className="hq-panel" onSubmit={save} style={{ maxWidth: 720 }}>
+		<form className="hq-panel stack" onSubmit={save} style={{ maxWidth: 720 }}>
 			<PanelHeader title="Game settings" />
-			<div className="field">
-				<label>Game name</label>
-				<input className="input" value={name} onChange={(e) => setName(e.target.value)} required />
-			</div>
-			<div className="row gap mb" style={{ alignItems: 'flex-end' }}>
+			<Field label="Game name">
+				<input className="input" style={dense} value={name} onChange={(e) => setName(e.target.value)} required />
+			</Field>
+			<div className="row wrap" style={{ alignItems: 'flex-end' }}>
 				<div>
 					<div className="label">Game code</div>
 					<div className="code-box">{game.code}</div>
@@ -71,43 +70,38 @@ export function SettingsPanel() {
 						await refresh();
 					}}
 				>
-					↻ Regenerate
+					Regenerate
 				</button>
-				<a className="btn xs yellow" href={`/join?code=${game.code}`} target="_blank" rel="noreferrer">
+				<a className="btn xs orange" href={`/join?code=${game.code}`} target="_blank" rel="noreferrer">
 					Open join link
 				</a>
 			</div>
 			<div className="hq-grid cols-2">
-				<div className="field">
-					<label>Status</label>
-					<select className="select" value={status} onChange={(e) => setStatus(e.target.value)}>
+				<Field label="Status">
+					<select className="select" style={dense} value={status} onChange={(e) => setStatus(e.target.value)}>
 						<option value="draft">Draft (players can join, no photos yet)</option>
 						<option value="live">Live</option>
 						<option value="ended">Ended</option>
 					</select>
-				</div>
-				<div className="field">
-					<label>Photo approval mode</label>
-					<select className="select" value={mode} onChange={(e) => setMode(e.target.value)}>
+				</Field>
+				<Field label="Photo approval mode">
+					<select className="select" style={dense} value={mode} onChange={(e) => setMode(e.target.value)}>
 						<option value="manual">Manual approval</option>
 						<option value="auto">Auto-approve on upload</option>
 					</select>
-				</div>
-				<div className="field">
-					<label>Default points per clue</label>
-					<input className="input" type="number" min={0} value={points} onChange={(e) => setPoints(e.target.value)} />
-				</div>
+				</Field>
+				<Field label="Default points per clue">
+					<input className="input" style={dense} type="number" min={0} value={points} onChange={(e) => setPoints(e.target.value)} />
+				</Field>
 				<div />
-				<div className="field">
-					<label>Start time</label>
-					<input className="input" type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-				</div>
-				<div className="field">
-					<label>End time</label>
-					<input className="input" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
-				</div>
+				<Field label="Start time">
+					<input className="input" style={dense} type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
+				</Field>
+				<Field label="End time">
+					<input className="input" style={dense} type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
+				</Field>
 			</div>
-			<button className="btn sm">Save settings</button>
+			<button className="btn md block">Save settings</button>
 		</form>
 	);
 }

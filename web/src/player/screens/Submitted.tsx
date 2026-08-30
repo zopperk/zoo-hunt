@@ -1,8 +1,9 @@
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { formatPoints } from '../../shared/format';
 import { useGameState } from '../GameContext';
-import { Screen } from '../components';
+import { Confetti, Screen } from '../components';
 
+/** Frame 10-submission: NICE SHOT! + polaroid + BACK TO CLUES. */
 export function Submitted() {
 	const { id } = useParams();
 	const s = useGameState();
@@ -13,42 +14,40 @@ export function Submitted() {
 	const photo = loc.state?.photo ?? sub?.photo_url;
 	const points = loc.state?.points ?? sub?.points_awarded ?? 0;
 	const approved = points > 0 || sub?.status === 'approved';
-	const next = s.clues.find((c) => c.status === 'available' && c.id !== clue.id);
 
 	return (
-		<Screen center>
-			<div className="confetti" aria-hidden>
-				🎉✨🍌
-			</div>
-			<h1 className="title-l c-red">Nice shot!</h1>
-			{photo && (
-				<div className="polaroid mt">
-					<img src={photo} alt="Submitted find" />
+		<Screen>
+			<Confetti />
+			<div className="sheet" style={{ marginTop: 20 }}>
+				<div className="card tc" style={{ padding: '18px 16px 22px' }}>
+					<h1 className="display" style={{ fontSize: 40, color: 'var(--orange)' }}>
+						Nice shot!
+					</h1>
+					{photo && (
+						<div className="polaroid mt" style={{ maxWidth: 300 }}>
+							<img src={photo} alt="Submitted find" style={{ aspectRatio: '1 / 1' }} />
+						</div>
+					)}
+					{approved ? (
+						<div className="mt">
+							<div className="eyebrow" style={{ color: 'var(--orange)' }}>
+								Submitted!
+							</div>
+							<div className="score-box" style={{ background: 'transparent', border: 0, padding: 0 }}>
+								<div className="v">+{formatPoints(points)} points</div>
+							</div>
+						</div>
+					) : (
+						<p className="h-sub mt" style={{ fontSize: 16, lineHeight: 1.35 }}>
+							Your team’s photo has been submitted for review. The score will load shortly.
+						</p>
+					)}
 				</div>
-			)}
-			{approved ? (
-				<div className="mt-l">
-					<div className="eyebrow c-red" style={{ fontSize: 16 }}>
-						Submitted!
-					</div>
-					<div className="display title-l c-green">+{formatPoints(points)} points</div>
-				</div>
-			) : (
-				<p className="mt-l small" style={{ maxWidth: 280 }}>
-					Your team’s photo has been sent to the host for review. Points will show up on the scoreboard once it’s approved.
-				</p>
-			)}
-			<div className="mt-l" style={{ width: '100%' }}>
-				{next ? (
-					<Link to={`/clues/${next.id}`} className="btn block">
-						On to the next clue!
-					</Link>
-				) : (
-					<Link to="/clues" className="btn block">
-						Back to clues
-					</Link>
-				)}
 			</div>
+			<div className="spacer" />
+			<Link to="/clues" className="btn md block mt-l">
+				Back to clues
+			</Link>
 		</Screen>
 	);
 }

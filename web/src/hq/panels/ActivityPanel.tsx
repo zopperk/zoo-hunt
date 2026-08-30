@@ -1,23 +1,38 @@
+import type { ComponentType, SVGProps } from 'react';
 import { timeAgo, clock } from '../../shared/format';
+import {
+	CameraIcon,
+	ChartIcon,
+	CheckCircleIcon,
+	ClockIcon,
+	GearIcon,
+	ListIcon,
+	LockIcon,
+	MagnifierIcon,
+	PersonCircleIcon,
+	StarIcon,
+	TrophyIcon,
+	XIcon,
+} from '../../shared/icons';
 import { adminApi } from '../api';
 import { useHq, useHqData } from '../HqApp';
 import { Empty, PanelHeader } from '../components';
 
-const ICON: Record<string, string> = {
-	team_joined: '🐵',
-	team_created: '🐵',
-	team_removed: '🗑️',
-	photo_submitted: '📷',
-	photo_approved: '✅',
-	photo_rejected: '❌',
-	clue_released: '🔓',
-	clue_locked: '🔒',
-	clue_scheduled: '⏰',
-	score_adjusted: '🎯',
-	bonus_posted: '⭐',
-	bonus_awarded: '🏅',
-	game_created: '🎉',
-	game_status: '🚦',
+const ICON: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+	team_joined: PersonCircleIcon,
+	team_created: PersonCircleIcon,
+	team_removed: XIcon,
+	photo_submitted: CameraIcon,
+	photo_approved: CheckCircleIcon,
+	photo_rejected: XIcon,
+	clue_released: MagnifierIcon,
+	clue_locked: LockIcon,
+	clue_scheduled: ClockIcon,
+	score_adjusted: ChartIcon,
+	bonus_posted: StarIcon,
+	bonus_awarded: TrophyIcon,
+	game_created: TrophyIcon,
+	game_status: GearIcon,
 };
 
 export function ActivityPanel() {
@@ -31,14 +46,17 @@ export function ActivityPanel() {
 			) : data.activity.length === 0 ? (
 				<Empty>Nothing yet.</Empty>
 			) : (
-				<ul className="activity" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-					{data.activity.map((a) => (
-						<li key={a.id}>
-							<span aria-hidden>{ICON[a.type] ?? '•'}</span>
-							<span>{a.message}</span>
-							<time title={clock(a.created_at)}>{timeAgo(a.created_at)}</time>
-						</li>
-					))}
+				<ul className="activity">
+					{data.activity.map((a) => {
+						const Icon = ICON[a.type] ?? ListIcon;
+						return (
+							<li key={a.id}>
+								<Icon width={18} height={18} style={{ flex: 'none', color: 'var(--green)' }} aria-hidden />
+								<span>{a.message}</span>
+								<time title={clock(a.created_at)}>{timeAgo(a.created_at)}</time>
+							</li>
+						);
+					})}
 				</ul>
 			)}
 		</div>

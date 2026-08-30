@@ -1,45 +1,67 @@
 import { Link } from 'react-router-dom';
-import { clueStatusIcon, clueStatusLabel, formatPoints } from '../../shared/format';
+import { clueStatusLabel, formatPoints } from '../../shared/format';
 import { useGameState } from '../GameContext';
-import { Bar, Screen } from '../components';
+import { Plank, Screen } from '../components';
+import { QuestionDashedIcon, CameraIcon, CheckCircleIcon, LockIcon, StarIcon } from '../../shared/icons';
+import type { TeamClue } from '../../shared/api';
 
+function StatusIcon({ status }: { status: TeamClue['status'] }) {
+	const label = clueStatusLabel(status);
+	const Icon = status === 'complete' ? CheckCircleIcon : status === 'pending' ? CameraIcon : status === 'locked' ? LockIcon : QuestionDashedIcon;
+	return (
+		<span className="ic" role="img" aria-label={label}>
+			<Icon />
+		</span>
+	);
+}
+
+/** Frame 04-clues: plank + stacked paper clue cards. */
 export function Clues() {
 	const s = useGameState();
 	const done = s.clues.filter((c) => c.status === 'complete').length;
 	return (
 		<Screen>
-			<Bar right={`${done}/${s.clues.length}`}>Clues</Bar>
-			{s.bonus && (
-				<div className="card mt" style={{ background: 'var(--yellow-soft)' }}>
-					<div className="eyebrow c-red">⭐ Bonus challenge · {formatPoints(s.bonus.points)} pts</div>
-					<div className="bold" style={{ marginTop: 4 }}>
-						{s.bonus.title}
-					</div>
-					{s.bonus.description && <div className="small muted">{s.bonus.description}</div>}
-					<div className="tiny muted" style={{ marginTop: 6 }}>
-						Show the host to claim it.
-					</div>
-				</div>
-			)}
-			<div className="list mt">
-				{s.clues.map((c) => (
-					<Link key={c.id} to={`/clues/${c.id}`} className={`clue-row ${c.status}`} aria-disabled={c.status === 'locked'}>
-						<span className="num">{c.sort_order}</span>
-						<span className="t">
-							{c.title}
-							<div className="tiny muted" style={{ fontWeight: 600 }}>
-								{clueStatusLabel(c.status)}
+			<div className="sheet" style={{ marginTop: 0 }}>
+				<Plank side={`${done}/${s.clues.length}`}>Clues</Plank>
+				{s.bonus && (
+					<div className="clue-card" style={{ background: 'var(--t-yellow)' }}>
+						<div className="txt">
+							<div className="eyebrow">Bonus · {formatPoints(s.bonus.points)} pts</div>
+							<div className="body">
+								{s.bonus.title}
+								{s.bonus.description ? ` — ${s.bonus.description}` : ''}
 							</div>
+						</div>
+						<span className="ic" role="img" aria-label="Bonus challenge">
+							<StarIcon />
 						</span>
-						<span className="p">{c.status === 'locked' ? '—' : formatPoints(c.points)}</span>
-						<span className={`st ${c.status}`} aria-label={clueStatusLabel(c.status)}>
-							{clueStatusIcon(c.status)}
-						</span>
+					</div>
+				)}
+				{s.clues.map((c, i) => (
+					<Link
+						key={c.id}
+						to={`/clues/${c.id}`}
+						className={`clue-card ${c.status}`}
+						aria-disabled={c.status === 'locked'}
+						aria-label={`Clue ${c.sort_order}: ${clueStatusLabel(c.status)}`}
+						style={{ animationDelay: `${i * 40}ms`, position: 'relative' }}
+					>
+						<div className="txt">
+							<div className="eyebrow">Clue #{c.sort_order}</div>
+							<div className="body">{c.status === 'locked' ? 'Locked — the host will release this clue soon.' : c.body}</div>
+							{c.status !== 'locked' && <div className="tiny muted">{formatPoints(c.points)} pts</div>}
+						</div>
+						{c.status === 'complete' && <span className="stamp">Found</span>}
+						<StatusIcon status={c.status} />
 					</Link>
 				))}
-				{s.clues.length === 0 && <div className="card soft tc muted">No clues yet — the host is still setting up.</div>}
+				{s.clues.length === 0 && <div className="card tc muted">No clues yet — the host is still setting up.</div>}
 			</div>
-			{s.game.status === 'ended' && <div className="card mt tc bold c-red">The hunt has ended. Check the scoreboard!</div>}
+			{s.game.status === 'ended' && (
+				<div className="card mt tc" style={{ color: 'var(--orange)' }}>
+					The hunt has ended. Check the scoreboard!
+				</div>
+			)}
 		</Screen>
 	);
 }

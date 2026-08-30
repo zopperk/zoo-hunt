@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { clock } from '../../shared/format';
+import { ClockIcon, LockIcon, XIcon } from '../../shared/icons';
 import { adminApi, type AdminClue } from '../api';
 import { useHq, useHqData } from '../HqApp';
-import { Empty, PanelHeader } from '../components';
+import { Empty, Field, PanelHeader, dense } from '../components';
 
 const blank = { title: '', body: '', animal: '', points: '', mapX: '', mapY: '' };
 
@@ -45,7 +46,7 @@ export function CluesPanel() {
 	}
 
 	const clues = data?.clues ?? [];
-	const set = (k: keyof typeof blank) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
+	const set = (k: keyof typeof blank) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
 	return (
 		<>
@@ -54,11 +55,11 @@ export function CluesPanel() {
 					<button className="btn sm" onClick={() => act(() => adminApi.releaseNext(gameId), 'Next clue released')}>
 						Release next clue
 					</button>
-					<button className="btn sm yellow" onClick={() => act(() => adminApi.releaseAll(gameId), 'All clues released')}>
+					<button className="btn sm orange" onClick={() => act(() => adminApi.releaseAll(gameId), 'All clues released')}>
 						Release all
 					</button>
-					<button className="btn sm red" onClick={() => act(() => adminApi.lockAll(gameId), 'All clues locked')}>
-						Lock all
+					<button className="btn sm ghost orange" onClick={() => act(() => adminApi.lockAll(gameId), 'All clues locked')}>
+						<LockIcon width={16} height={16} /> Lock all
 					</button>
 				</PanelHeader>
 				{!data ? (
@@ -66,122 +67,125 @@ export function CluesPanel() {
 				) : clues.length === 0 ? (
 					<Empty>No clues yet. Add your first clue below.</Empty>
 				) : (
-					<table className="table">
-						<thead>
-							<tr>
-								<th>#</th>
-								<th>Title</th>
-								<th>Animal</th>
-								<th>Points</th>
-								<th>Status</th>
-								<th>Photos</th>
-								<th>Found by</th>
-								<th></th>
-							</tr>
-						</thead>
-						<tbody>
-							{clues.map((c) => (
-								<tr key={c.id}>
-									<td className="bold">{String(c.sort_order).padStart(2, '0')}</td>
-									<td>
-										<div className="bold">{c.title}</div>
-										<div className="tiny muted" style={{ maxWidth: 320, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-											{c.body}
-										</div>
-									</td>
-									<td>{c.animal || '—'}</td>
-									<td>{c.points}</td>
-									<td>
-										<span className={`pill ${c.status}`}>{c.status === 'available' ? 'Available' : 'Locked'}</span>
-										{c.release_at && <div className="tiny muted">⏰ {clock(c.release_at)}</div>}
-									</td>
-									<td>{c.photos}</td>
-									<td>
-										{c.completions}
-										{overview ? ` / ${overview.stats.teams}` : ''}
-									</td>
-									<td>
-										<div className="row gap" style={{ justifyContent: 'flex-end' }}>
-											{c.status === 'locked' ? (
-												<button className="btn xs" onClick={() => act(() => adminApi.patchClue(c.id, { status: 'available' }), `Released ${c.title}`)}>
-													Release
-												</button>
-											) : (
-												<button className="btn xs ghost" onClick={() => act(() => adminApi.patchClue(c.id, { status: 'locked' }), `Locked ${c.title}`)}>
-													Lock
-												</button>
+					<div style={{ overflowX: 'auto' }}>
+						<table className="table">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Title</th>
+									<th>Animal</th>
+									<th>Points</th>
+									<th>Status</th>
+									<th>Photos</th>
+									<th>Found by</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{clues.map((c) => (
+									<tr key={c.id}>
+										<td className="display" style={{ fontSize: 20, color: 'var(--brown)' }}>
+											{String(c.sort_order).padStart(2, '0')}
+										</td>
+										<td>
+											<div>{c.title}</div>
+											<div className="tiny muted" style={{ maxWidth: 320, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 500 }}>
+												{c.body}
+											</div>
+										</td>
+										<td>{c.animal || '—'}</td>
+										<td>{c.points}</td>
+										<td>
+											<span className={`pill ${c.status}`}>{c.status === 'available' ? 'Available' : 'Locked'}</span>
+											{c.release_at && (
+												<div className="tiny muted row" style={{ gap: 4, marginTop: 4 }}>
+													<ClockIcon width={12} height={12} /> {clock(c.release_at)}
+												</div>
 											)}
-											<button className="btn xs ghost" onClick={() => (setScheduleFor(c.id), setWhen(''))}>
-												Schedule
-											</button>
-											<button className="btn xs ghost" onClick={() => startEdit(c)}>
-												Edit
-											</button>
-											<button
-												className="btn xs ghost red"
-												onClick={() => window.confirm(`Delete clue "${c.title}"?`) && act(() => adminApi.deleteClue(c.id), 'Clue deleted')}
-											>
-												✕
-											</button>
-										</div>
-										{scheduleFor === c.id && (
-											<div className="row gap mt">
-												<input className="input" type="datetime-local" style={{ padding: '4px 8px' }} value={when} onChange={(e) => setWhen(e.target.value)} />
-												<button
-													className="btn xs"
-													disabled={!when}
-													onClick={() =>
-														act(() => adminApi.schedule(c.id, new Date(when).toISOString()), `Scheduled for ${new Date(when).toLocaleTimeString()}`).then(() =>
-															setScheduleFor(null),
-														)
-													}
-												>
-													Set
+										</td>
+										<td>{c.photos}</td>
+										<td>
+											{c.completions}
+											{overview ? ` / ${overview.stats.teams}` : ''}
+										</td>
+										<td>
+											<div className="row" style={{ justifyContent: 'flex-end' }}>
+												{c.status === 'locked' ? (
+													<button className="btn xs" onClick={() => act(() => adminApi.patchClue(c.id, { status: 'available' }), `Released ${c.title}`)}>
+														Release
+													</button>
+												) : (
+													<button className="btn xs ghost" onClick={() => act(() => adminApi.patchClue(c.id, { status: 'locked' }), `Locked ${c.title}`)}>
+														Lock
+													</button>
+												)}
+												<button className="btn xs ghost" onClick={() => (setScheduleFor(c.id), setWhen(''))}>
+													Schedule
 												</button>
-												<button className="btn xs ghost" onClick={() => setScheduleFor(null)}>
-													Cancel
+												<button className="btn xs ghost" onClick={() => startEdit(c)}>
+													Edit
+												</button>
+												<button
+													className="btn xs ghost orange"
+													aria-label={`Delete ${c.title}`}
+													onClick={() => window.confirm(`Delete clue "${c.title}"?`) && act(() => adminApi.deleteClue(c.id), 'Clue deleted')}
+												>
+													<XIcon width={14} height={14} />
 												</button>
 											</div>
-										)}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
+											{scheduleFor === c.id && (
+												<div className="row mt">
+													<input className="input" type="datetime-local" style={dense} value={when} onChange={(e) => setWhen(e.target.value)} />
+													<button
+														className="btn xs"
+														disabled={!when}
+														onClick={() =>
+															act(() => adminApi.schedule(c.id, new Date(when).toISOString()), `Scheduled for ${new Date(when).toLocaleTimeString()}`).then(() =>
+																setScheduleFor(null),
+															)
+														}
+													>
+														Set
+													</button>
+													<button className="btn xs ghost" onClick={() => setScheduleFor(null)}>
+														Cancel
+													</button>
+												</div>
+											)}
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 				)}
 			</div>
 
-			<form className="hq-panel" onSubmit={save}>
-				<h2 className="title-m c-green">{editing ? 'Edit clue' : 'Add clue'}</h2>
-				<div className="hq-grid cols-3 mt">
-					<div className="field">
-						<label>Title</label>
-						<input className="input" value={form.title} onChange={set('title')} required placeholder="Lunch in the Trees" />
-					</div>
-					<div className="field">
-						<label>Animal (for hosts)</label>
-						<input className="input" value={form.animal} onChange={set('animal')} placeholder="giraffe" />
-					</div>
-					<div className="field">
-						<label>Points</label>
-						<input className="input" type="number" min={0} value={form.points} onChange={set('points')} placeholder={String(overview?.game.default_points ?? 150)} />
-					</div>
-				</div>
-				<div className="field">
-					<label>Clue text (shown to players)</label>
-					<textarea className="textarea" value={form.body} onChange={set('body')} required placeholder="My imposing stature makes it tough to seek shelter in rain…" />
-				</div>
+			<form className="hq-panel stack" onSubmit={save}>
+				<PanelHeader title={editing ? 'Edit clue' : 'Add clue'} />
 				<div className="hq-grid cols-3">
-					<div className="field">
-						<label>Map X (0–1, optional)</label>
-						<input className="input" type="number" step="0.01" min={0} max={1} value={form.mapX} onChange={set('mapX')} />
-					</div>
-					<div className="field">
-						<label>Map Y (0–1, optional)</label>
-						<input className="input" type="number" step="0.01" min={0} max={1} value={form.mapY} onChange={set('mapY')} />
-					</div>
+					<Field label="Title">
+						<input className="input" style={dense} value={form.title} onChange={set('title')} required placeholder="Lunch in the Trees" />
+					</Field>
+					<Field label="Animal (for hosts)">
+						<input className="input" style={dense} value={form.animal} onChange={set('animal')} placeholder="giraffe" />
+					</Field>
+					<Field label="Points">
+						<input className="input" style={dense} type="number" min={0} value={form.points} onChange={set('points')} placeholder={String(overview?.game.default_points ?? 150)} />
+					</Field>
+				</div>
+				<Field label="Clue text (shown to players)">
+					<textarea className="textarea" style={{ ...dense, fontFamily: 'var(--f-mono)', fontWeight: 500 }} value={form.body} onChange={set('body')} required placeholder="My imposing stature makes it tough to seek shelter in rain…" />
+				</Field>
+				<div className="hq-grid cols-3">
+					<Field label="Map X (0–1, optional)">
+						<input className="input" style={dense} type="number" step="0.01" min={0} max={1} value={form.mapX} onChange={set('mapX')} />
+					</Field>
+					<Field label="Map Y (0–1, optional)">
+						<input className="input" style={dense} type="number" step="0.01" min={0} max={1} value={form.mapY} onChange={set('mapY')} />
+					</Field>
 					<div className="field" style={{ justifyContent: 'flex-end' }}>
-						<div className="row gap">
+						<div className="row">
 							<button className="btn sm grow">{editing ? 'Save changes' : '+ Add clue'}</button>
 							{editing && (
 								<button type="button" className="btn sm ghost" onClick={() => (setEditing(null), setForm(blank))}>

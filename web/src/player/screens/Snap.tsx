@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { playerApi, ApiError } from '../../shared/api';
 import { useGame, useGameState } from '../GameContext';
-import { BackLink, Bar, Screen } from '../components';
+import { BackLink, Screen } from '../components';
+import { CameraIcon } from '../../shared/icons';
 
 /** Downscale to ≤1600px on the long edge and re-encode as JPEG so uploads stay small. */
 export async function shrinkImage(file: File, maxEdge = 1600, quality = 0.85): Promise<Blob> {
@@ -26,6 +27,7 @@ export async function shrinkImage(file: File, maxEdge = 1600, quality = 0.85): P
 	return new Promise((resolve) => canvas.toBlob((b) => resolve(b ?? file), 'image/jpeg', quality));
 }
 
+/** Frame 09-snap-pic. */
 export function Snap() {
 	const { id } = useParams();
 	const nav = useNavigate();
@@ -70,53 +72,62 @@ export function Snap() {
 	return (
 		<Screen>
 			<BackLink to={`/clues/${clue.id}`}>Clue {clue.sort_order}</BackLink>
-			<Bar>Snap your find</Bar>
-			<p className="tc small" style={{ marginTop: 12 }}>
-				Take a clear team selfie with the animal that matches the clue. If it’s hiding, a picture of its enclosure will do.
-			</p>
-
-			<input
-				ref={input}
-				type="file"
-				accept="image/*"
-				capture="environment"
-				hidden
-				data-testid="photo-input"
-				onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-			/>
-
-			{preview ? (
-				<div className="polaroid mt" style={{ alignSelf: 'center' }}>
-					<img src={preview} alt="Your photo" />
+			<div className="sheet">
+				<div className="card tc" style={{ padding: '18px 16px' }}>
+					<h1 className="display h-title" style={{ fontSize: 33 }}>
+						Snap your find
+					</h1>
+					<p className="h-sub" style={{ fontSize: 16, lineHeight: 1.35, marginTop: 8 }}>
+						Take a clear selfie with the animal that matches the clue! If it’s not visible, a picture of its enclosure will suffice.
+					</p>
 				</div>
-			) : (
-				<button
-					type="button"
-					className="card tc mt"
-					style={{ minHeight: 240, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}
-					onClick={() => input.current?.click()}
-				>
-					<div style={{ fontSize: 56 }} aria-hidden>
-						📸
-					</div>
-					<div className="display title-m c-green">Open camera</div>
-					<div className="small muted">or pick from your photos</div>
-				</button>
-			)}
 
-			{error && <div className="error">{error}</div>}
-			<div style={{ flex: 1 }} />
+				<input ref={input} type="file" accept="image/*" capture="environment" hidden data-testid="photo-input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+
+				{preview ? (
+					<div className="polaroid" style={{ alignSelf: 'center', transform: 'none' }}>
+						<img src={preview} alt="Your photo" style={{ aspectRatio: '1 / 1' }} />
+					</div>
+				) : (
+					<button
+						type="button"
+						className="card tc"
+						style={{
+							aspectRatio: '1 / 1',
+							display: 'flex',
+							flexDirection: 'column',
+							alignItems: 'center',
+							justifyContent: 'center',
+							gap: 10,
+							cursor: 'pointer',
+							borderStyle: 'dashed',
+							borderWidth: 2,
+							color: 'var(--brown)',
+						}}
+						onClick={() => input.current?.click()}
+					>
+						<CameraIcon style={{ width: 72, height: 72 }} />
+						<div className="display" style={{ fontSize: 26, color: 'var(--green)' }}>
+							Open camera
+						</div>
+						<div className="small muted">or pick from your photos</div>
+					</button>
+				)}
+			</div>
+
+			{error && <div className="error mt">{error}</div>}
+			<div className="spacer" />
 			{preview ? (
-				<div className="row gap mt-l">
-					<button type="button" className="btn ghost" onClick={() => setFile(null)} disabled={busy}>
+				<div className="row mt-l" style={{ gap: 10 }}>
+					<button type="button" className="btn md ghost" onClick={() => setFile(null)} disabled={busy}>
 						Retake
 					</button>
-					<button type="button" className="btn grow red" onClick={submit} disabled={busy}>
-						{busy ? 'Sending…' : 'Submit photo'}
+					<button type="button" className="btn md grow orange" onClick={submit} disabled={busy}>
+						{busy ? 'Sending…' : 'Submit'}
 					</button>
 				</div>
 			) : (
-				<button type="button" className="btn block mt-l" onClick={() => input.current?.click()}>
+				<button type="button" className="btn md block mt-l" onClick={() => input.current?.click()}>
 					Take photo
 				</button>
 			)}

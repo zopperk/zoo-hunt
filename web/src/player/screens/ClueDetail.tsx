@@ -1,8 +1,10 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { formatPoints } from '../../shared/format';
 import { useGameState } from '../GameContext';
-import { BackLink, Bar, Screen } from '../components';
+import { BackLink, Plank, Screen } from '../components';
+import { QuestionDashedIcon, CameraIcon, LockIcon } from '../../shared/icons';
 
+/** Frame 08-clue-details: "CLUE n OF 10" plank + paper note + I THINK I KNOW! */
 export function ClueDetail() {
 	const { id } = useParams();
 	const s = useGameState();
@@ -12,55 +14,61 @@ export function ClueDetail() {
 
 	return (
 		<Screen>
-			<div className="row between">
-				<BackLink to="/clues">Clues</BackLink>
-				<span className="eyebrow">{formatPoints(clue.points)} pts</span>
-			</div>
-			<Bar>
-				Clue {clue.sort_order} of {s.clues.length}
-			</Bar>
-
-			{clue.status === 'locked' ? (
-				<div className="card mt-l tc">
-					<div style={{ fontSize: 40 }}>🔒</div>
-					<div className="bold">This clue hasn’t been released yet.</div>
-					<div className="small muted">Keep an eye out — the host will unlock it soon.</div>
+			<BackLink to="/clues">Clues</BackLink>
+			<div className="sheet">
+				<div className="row between">
+					<Plank fit>
+						Clue {clue.sort_order} of {s.clues.length}
+					</Plank>
+					<span className="eyebrow">{formatPoints(clue.points)} pts</span>
 				</div>
-			) : (
-				<>
-					<div className="note mt-l">
-						<p className="type" style={{ fontSize: 18, margin: 0 }}>
-							{clue.body}
-						</p>
-						<div className="tc" style={{ fontSize: 64, marginTop: 14 }} aria-hidden>
-							{clue.status === 'complete' ? '✅' : '❓'}
-						</div>
-					</div>
 
-					{clue.status === 'complete' && sub && (
-						<div className="card mt-l tc">
-							<div className="eyebrow c-green">Found! +{formatPoints(sub.points_awarded)} pts</div>
-							<img src={sub.photo_url} alt="Your team's find" style={{ width: '100%', borderRadius: 8, marginTop: 8, maxHeight: 220, objectFit: 'cover' }} />
-						</div>
-					)}
-					{clue.status === 'pending' && sub && (
-						<div className="card mt-l tc">
-							<div className="eyebrow" style={{ color: '#9a7a12' }}>
-								📷 Photo in review
+				<div className="note" style={{ marginTop: 20 }}>
+					{clue.status === 'locked' ? (
+						<>
+							<p className="body">This clue hasn’t been released yet. Keep an eye out — the host will unlock it soon!</p>
+							<div className="big-ic">
+								<LockIcon />
 							</div>
-							<div className="small muted">The host is checking your photo. Points will land shortly.</div>
-						</div>
+						</>
+					) : (
+						<>
+							<p className="body">{clue.body}</p>
+							{clue.status === 'complete' && sub ? (
+								<div className="tc" style={{ marginTop: 18 }}>
+									<div className="polaroid" style={{ maxWidth: 220 }}>
+										<img src={sub.photo_url} alt="Your team's find" />
+									</div>
+									<div className="eyebrow" style={{ color: 'var(--green)', marginTop: 10 }}>
+										Found! +{formatPoints(sub.points_awarded)} pts
+									</div>
+								</div>
+							) : clue.status === 'pending' ? (
+								<div className="tc" style={{ marginTop: 18 }}>
+									<div className="big-ic" style={{ color: 'var(--orange)' }}>
+										<CameraIcon />
+									</div>
+									<div className="eyebrow" style={{ color: 'var(--orange)' }}>
+										Photo in review
+									</div>
+								</div>
+							) : (
+								<div className="big-ic">
+									<QuestionDashedIcon />
+								</div>
+							)}
+						</>
 					)}
-				</>
-			)}
+				</div>
+			</div>
 
-			<div style={{ flex: 1 }} />
+			<div className="spacer" />
 			{clue.status === 'available' && s.game.status === 'live' && (
-				<Link to={`/clues/${clue.id}/snap`} className="btn block mt-l">
+				<Link to={`/clues/${clue.id}/snap`} className="btn md block mt-l">
 					I think I know!
 				</Link>
 			)}
-			{clue.status === 'available' && s.game.status !== 'live' && <div className="card soft tc muted mt-l">Photos open once the host starts the game.</div>}
+			{clue.status === 'available' && s.game.status !== 'live' && <div className="card tc muted mt-l">Photos open once the host starts the game.</div>}
 		</Screen>
 	);
 }

@@ -2,7 +2,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { ApiError } from '../shared/api';
 import { useSocket } from '../shared/useSocket';
+import { CameraIcon, ChartIcon, GearIcon, ListIcon, MagnifierIcon, PersonCircleIcon, StarIcon, TrophyIcon } from '../shared/icons';
 import { adminApi, type Game, type Overview } from './api';
+import { Field, PanelHeader, dense } from './components';
 import { OverviewPanel } from './panels/OverviewPanel';
 import { TeamsPanel, TeamDetailPanel } from './panels/TeamsPanel';
 import { PhotoReviewPanel } from './panels/PhotoReviewPanel';
@@ -68,16 +70,20 @@ function Login({ onDone }: { onDone: () => void }) {
 		}
 	}
 	return (
-		<div className="paper" style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 20 }}>
-			<form onSubmit={submit} className="hq-panel" style={{ width: 360 }}>
-				<div className="eyebrow">Game master</div>
-				<h1 className="title-l c-green">HQ login</h1>
-				<div className="field mt">
-					<label htmlFor="pw">Host password</label>
-					<input id="pw" className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
+		<div className="hq-login">
+			<form onSubmit={submit} className="hq-panel stack tc" style={{ marginTop: 70 }}>
+				<img src="/art/george-camera.png" alt="" style={{ width: 140, margin: '-88px auto 0' }} />
+				<div>
+					<div className="eyebrow">Game master</div>
+					<h1 className="display" style={{ fontSize: 44, color: 'var(--brown)' }}>
+						Game Master HQ
+					</h1>
 				</div>
+				<Field label="Host password">
+					<input id="pw" className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
+				</Field>
 				{error && <div className="error">{error}</div>}
-				<button className="btn block" disabled={busy || !password}>
+				<button className="btn md block orange" disabled={busy || !password}>
 					{busy ? 'Checking…' : 'Enter HQ'}
 				</button>
 			</form>
@@ -93,7 +99,10 @@ function GamePicker({ onPick }: { onPick: (id: string) => void }) {
 	const [mode, setMode] = useState<'manual' | 'auto'>('manual');
 	const [error, setError] = useState<string | null>(null);
 	useEffect(() => {
-		adminApi.games().then((r) => setGames(r.games)).catch((e) => setError(String(e.message)));
+		adminApi
+			.games()
+			.then((r) => setGames(r.games))
+			.catch((e) => setError(String(e.message)));
 	}, []);
 	async function create(e: FormEvent) {
 		e.preventDefault();
@@ -106,56 +115,62 @@ function GamePicker({ onPick }: { onPick: (id: string) => void }) {
 	}
 	return (
 		<div className="paper" style={{ minHeight: '100dvh', padding: 24 }}>
-			<div style={{ maxWidth: 900, margin: '0 auto' }} className="hq-grid cols-2">
-				<div className="hq-panel">
-					<h2 className="title-m c-green">Your games</h2>
-					{error && <div className="error">{error}</div>}
-					{games === null ? (
-						<div className="spinner" />
-					) : games.length === 0 ? (
-						<p className="muted small">No games yet — create one on the right.</p>
-					) : (
-						<div className="list mt">
-							{games.map((g) => (
-								<button key={g.id} className="clue-row" style={{ cursor: 'pointer' }} onClick={() => onPick(g.id)}>
-									<span className="t">
-										{g.name}
-										<div className="tiny muted">
-											{g.code} · {new Date(g.created_at).toLocaleDateString()}
-										</div>
-									</span>
-									<span className={`pill ${g.status}`}>{g.status}</span>
-								</button>
-							))}
+			<div style={{ maxWidth: 960, margin: '0 auto' }}>
+				<div className="row" style={{ gap: 14, marginBottom: 18 }}>
+					<img src="/art/monkey-head.png" alt="" style={{ width: 64 }} />
+					<div>
+						<div className="eyebrow">Game master</div>
+						<div className="display" style={{ fontSize: 40, color: 'var(--brown)' }}>
+							Pick a hunt
 						</div>
-					)}
+					</div>
 				</div>
-				<form className="hq-panel" onSubmit={create}>
-					<div className="eyebrow">Create your hunt!</div>
-					<h2 className="title-m c-green">New game</h2>
-					<div className="field mt">
-						<label>Game name</label>
-						<input className="input" value={name} onChange={(e) => setName(e.target.value)} required />
+				<div className="hq-grid cols-2">
+					<div className="hq-panel">
+						<PanelHeader title="Your games" />
+						{error && <div className="error mb">{error}</div>}
+						{games === null ? (
+							<div className="spinner" />
+						) : games.length === 0 ? (
+							<div className="empty">No games yet — create one on the right.</div>
+						) : (
+							<div className="stack">
+								{games.map((g) => (
+									<button key={g.id} className="team-row light" onClick={() => onPick(g.id)}>
+										<span className="name">
+											{g.name}
+											<div className="tiny muted">
+												{g.code} · {new Date(g.created_at).toLocaleDateString()}
+											</div>
+										</span>
+										<span className={`pill ${g.status}`}>{g.status}</span>
+									</button>
+								))}
+							</div>
+						)}
 					</div>
-					<div className="field">
-						<label>Game code (optional)</label>
-						<input className="input" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Auto-generated" />
-					</div>
-					<div className="hq-grid cols-2">
-						<div className="field">
-							<label>Default points per clue</label>
-							<input className="input" type="number" min={0} value={points} onChange={(e) => setPoints(Number(e.target.value))} />
+					<form className="hq-panel stack" onSubmit={create}>
+						<PanelHeader title="New game" sub="Create your hunt!" />
+						<Field label="Game name">
+							<input className="input" style={dense} value={name} onChange={(e) => setName(e.target.value)} required />
+						</Field>
+						<Field label="Game code (optional)">
+							<input className="input" style={dense} value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Auto-generated" />
+						</Field>
+						<div className="hq-grid cols-2">
+							<Field label="Default points per clue">
+								<input className="input" style={dense} type="number" min={0} value={points} onChange={(e) => setPoints(Number(e.target.value))} />
+							</Field>
+							<Field label="Photo approval mode">
+								<select className="select" style={dense} value={mode} onChange={(e) => setMode(e.target.value as 'manual' | 'auto')}>
+									<option value="manual">Manual approval</option>
+									<option value="auto">Auto-approve</option>
+								</select>
+							</Field>
 						</div>
-						<div className="field">
-							<label>Photo approval mode</label>
-							<select className="select" value={mode} onChange={(e) => setMode(e.target.value as 'manual' | 'auto')}>
-								<option value="manual">Manual approval</option>
-								<option value="auto">Auto-approve</option>
-							</select>
-						</div>
-					</div>
-					<button className="btn block">Create game</button>
-				</form>
+						<button className="btn md block orange">Create game</button>
+					</form>
+				</div>
 			</div>
 		</div>
 	);
@@ -177,48 +192,51 @@ function Shell({ children }: { children: ReactNode }) {
 		<div className="hq">
 			<aside className="hq-side">
 				<div className="brand">
-					<small>Game master</small>HQ
+					<img src="/art/monkey-head.png" alt="" />
+					<div>
+						<small>Game master</small>HQ
+					</div>
 				</div>
 				<nav className="hq-nav">
-					<NavLink to="/hq" end className={cls}>
-						📊 Overview
+					<NavLink to="/admin" end className={cls}>
+						<ChartIcon /> Overview
 					</NavLink>
-					<NavLink to="/hq/teams" className={cls}>
-						🐵 Teams
+					<NavLink to="/admin/teams" className={cls}>
+						<PersonCircleIcon /> Teams
 					</NavLink>
-					<NavLink to="/hq/review" className={cls}>
-						📷 Photo review {pending > 0 && <span className="count">{pending}</span>}
+					<NavLink to="/admin/review" className={cls}>
+						<CameraIcon /> Photo review {pending > 0 && <span className="count">{pending}</span>}
 					</NavLink>
-					<NavLink to="/hq/clues" className={cls}>
-						🔍 Clues
+					<NavLink to="/admin/clues" className={cls}>
+						<MagnifierIcon /> Clues
 					</NavLink>
-					<NavLink to="/hq/scores" className={cls}>
-						🏆 Scores
+					<NavLink to="/admin/scores" className={cls}>
+						<TrophyIcon /> Scores
 					</NavLink>
-					<NavLink to="/hq/bonus" className={cls}>
-						⭐ Bonus
+					<NavLink to="/admin/bonus" className={cls}>
+						<StarIcon /> Bonus
 					</NavLink>
-					<NavLink to="/hq/activity" className={cls}>
-						📜 Activity
+					<NavLink to="/admin/activity" className={cls}>
+						<ListIcon /> Activity
 					</NavLink>
-					<NavLink to="/hq/settings" className={cls}>
-						⚙️ Settings
+					<NavLink to="/admin/settings" className={cls}>
+						<GearIcon /> Settings
 					</NavLink>
 				</nav>
 				<div style={{ flex: 1 }} />
-				<button className={`btn sm block ${overview?.game.status === 'ended' ? '' : 'red'}`} onClick={endGame} disabled={!overview}>
+				<button className={`btn sm block ${overview?.game.status === 'ended' ? '' : 'orange'}`} onClick={endGame} disabled={!overview}>
 					{overview?.game.status === 'ended' ? 'Re-open game' : 'End game'}
 				</button>
 				<div className="hq-nav" style={{ marginTop: 8 }}>
-					<button onClick={switchGame}>↔ Switch game</button>
+					<button onClick={switchGame}>Switch game</button>
 					<button
 						onClick={async () => {
 							await adminApi.logout();
-							nav('/hq');
+							nav('/admin');
 							location.reload();
 						}}
 					>
-						⎋ Log out
+						Log out
 					</button>
 				</div>
 			</aside>
@@ -274,7 +292,7 @@ export function HqApp() {
 	}, [authed, gameId, refresh]);
 
 	useSocket(authed && gameId ? gameId : null, (e) => {
-		if (e.type === 'submission_created') toast('New photo to review 📷');
+		if (e.type === 'submission_created') toast('New photo to review');
 		void refresh();
 	});
 
@@ -323,7 +341,7 @@ export function HqApp() {
 					<Route path="bonus" element={<BonusPanel />} />
 					<Route path="activity" element={<ActivityPanel />} />
 					<Route path="settings" element={<SettingsPanel />} />
-					<Route path="*" element={<Navigate to="/hq" replace />} />
+					<Route path="*" element={<Navigate to="/admin" replace />} />
 				</Routes>
 			</Shell>
 		</Ctx.Provider>

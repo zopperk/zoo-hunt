@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:test';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { api, json, fixture, join, bearer, submitPhoto, photoFile, adminHeaders, createGame } from './helpers';
 
 describe('GET /api/games/:code', () => {
@@ -13,6 +13,94 @@ describe('GET /api/games/:code', () => {
 	});
 	it('404s for an unknown code', async () => {
 		expect((await api('/api/games/NOPE-0000')).status).toBe(404);
+	});
+});
+
+describe('GET /api/games/current', () => {
+	/** created_at is Date.now() (ms); wait so consecutive games never share a timestamp. */
+	const tick = () => new Promise((r) => setTimeout(r, 3));
+	/** Storage is only isolated per spec file, so start each test with no games (child rows cascade). */
+	beforeEach(async () => {
+		await env.DB.prepare('DELETE FROM games').run();
+	});
+
+	it('returns the newest live game and its teams in the public shape', async () => {
+		const admin = await adminHeaders();
+		const older = await createGame(admin, { name: 'Older Hunt' });
+		await tick();
+		const newest = await createGame(admin, { name: 'Newest Hunt' });
+		const alex = await join(newest.code, 'Alex', { teamName: 'Banana Bunch', color: 'yellow' });
+		await join(newest.code, 'Bea', { teamId: alex.team.id });
+		await join(older.code, 'Old Timer', { teamName: 'Should Not Appear' });
+
+		const r = await api('/api/games/current');
+		expect(r.status).toBe(200);
+		expect(r.body.game).toEqual({ id: newest.id, code: newest.code, name: 'Newest Hunt', status: 'live' });
+		expect(r.body.game.id).not.toBe(older.id);
+		expect(r.body.teams).toEqual([expect.objectContaining({ id: alex.team.id, name: 'Banana Bunch', color: 'yellow', players: 2 })]);
+		expect(r.body.colors).toContain('purple');
+		expect(r.body).not.toHaveProperty('token');
+		expect(r.body).not.toHaveProperty('clues');
+	});
+
+	it('prefers a live game over a newer draft', async () => {
+		const admin = await adminHeaders();
+		const live = await createGame(admin, { name: 'Live Hunt' });
+		await tick();
+		const draft = await createGame(admin, { name: 'Draft Hunt', status: 'draft' });
+		expect(draft.status).toBe('draft');
+
+		const r = await api('/api/games/current');
+		expect(r.status).toBe(200);
+		expect(r.body.game.id).toBe(live.id);
+		expect(r.body.game.status).toBe('live');
+	});
+
+	it('falls back to the newest draft when nothing is live', async () => {
+		const admin = await adminHeaders();
+		const ended = await createGame(admin, { name: 'Ended Hunt' });
+		await api(`/api/admin/games/${ended.id}`, { method: 'PATCH', body: json({ status: 'ended' }) }, admin);
+		await tick();
+		const olderDraft = await createGame(admin, { name: 'Older Draft', status: 'draft' });
+		await tick();
+		const newerDraft = await createGame(admin, { name: 'Newer Draft', status: 'draft' });
+
+		const r = await api('/api/games/current');
+		expect(r.status).toBe(200);
+		expect(r.body.game.id).toBe(newerDraft.id);
+		expect(r.body.game.id).not.toBe(olderDraft.id);
+		expect(r.body.game.status).toBe('draft');
+		expect(r.body.teams).toEqual([]);
+	});
+
+	it('404s when the only games have ended', async () => {
+		const admin = await adminHeaders();
+		const game = await createGame(admin);
+		await api(`/api/admin/games/${game.id}`, { method: 'PATCH', body: json({ status: 'ended' }) }, admin);
+		const r = await api('/api/games/current');
+		expect(r.status).toBe(404);
+		expect(r.body.error).toBeTruthy();
+	});
+
+	it('404s with an error body when there are no games at all', async () => {
+		const r = await api('/api/games/current');
+		expect(r.status).toBe(404);
+		expect(r.body).toEqual({ error: expect.any(String) });
+	});
+
+	it('is not shadowed by the /games/:code lookup', async () => {
+		const admin = await adminHeaders();
+		const game = await createGame(admin);
+		// If /games/:code won the match, "current" would be treated as a code and 404.
+		// The route must answer with the newest live game regardless of its code.
+		const r = await api('/api/games/current');
+		expect(r.status).toBe(200);
+		expect(r.body.game.id).toBe(game.id);
+		expect(r.body.game.code).not.toBe('CURRENT');
+		// And the code lookup still works for the real code.
+		expect((await api(`/api/games/${game.code}`)).body.game.id).toBe(game.id);
+		// Unknown codes still 404 through the :code route.
+		expect((await api('/api/games/current-nope')).status).toBe(404);
 	});
 });
 

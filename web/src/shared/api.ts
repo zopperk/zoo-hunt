@@ -106,6 +106,7 @@ export async function request<T>(path: string, init: RequestInit = {}, auth: 'pl
 
 export const playerApi = {
 	lookupGame: (code: string) => request<PublicGame>(`/api/games/${encodeURIComponent(code.trim().toUpperCase())}`, {}, 'none'),
+	currentGame: () => request<PublicGame>('/api/games/current', {}, 'none'),
 	join: (body: { code: string; playerName: string; teamId?: string; teamName?: string; color?: string }) =>
 		request<Bootstrap & { token: string }>('/api/join', { method: 'POST', body: JSON.stringify(body) }, 'none'),
 	me: () => request<Bootstrap>('/api/me'),

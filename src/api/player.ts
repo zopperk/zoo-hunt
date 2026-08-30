@@ -77,21 +77,35 @@ async function bootstrap(d1: D1Database, game: db.GameRow, player: db.PlayerRow,
 	};
 }
 
+async function publicGame(d1: D1Database, game: db.GameRow) {
+	const teams = await d1
+		.prepare(
+			`SELECT t.id, t.name, t.color, t.avatar, (SELECT COUNT(*) FROM players p WHERE p.team_id = t.id) AS players
+			 FROM teams t WHERE t.game_id = ? ORDER BY t.created_at`,
+		)
+		.bind(game.id)
+		.all<{ id: string; name: string; color: string; avatar: string; players: number }>();
+	return {
+		game: { id: game.id, code: game.code, name: game.name, status: game.status },
+		teams: teams.results,
+		colors: TEAM_COLORS,
+	};
+}
+
+/** Public: the game players should join today — the most recently created live game (then draft). */
+playerRoutes.get('/games/current', async (c) => {
+	const game =
+		(await c.env.DB.prepare(`SELECT * FROM games WHERE status = 'live' ORDER BY created_at DESC LIMIT 1`).first<db.GameRow>()) ??
+		(await c.env.DB.prepare(`SELECT * FROM games WHERE status = 'draft' ORDER BY created_at DESC LIMIT 1`).first<db.GameRow>());
+	if (!game) return c.json({ error: 'No game is running right now' }, 404);
+	return c.json(await publicGame(c.env.DB, game));
+});
+
 /** Public: look up a game by code so the join screen can list teams. */
 playerRoutes.get('/games/:code', async (c) => {
 	const game = await db.getGameByCode(c.env.DB, c.req.param('code'));
 	if (!game) return c.json({ error: 'No game with that code' }, 404);
-	const teams = await c.env.DB.prepare(
-		`SELECT t.id, t.name, t.color, t.avatar, (SELECT COUNT(*) FROM players p WHERE p.team_id = t.id) AS players
-		 FROM teams t WHERE t.game_id = ? ORDER BY t.created_at`,
-	)
-		.bind(game.id)
-		.all<{ id: string; name: string; color: string; avatar: string; players: number }>();
-	return c.json({
-		game: { id: game.id, code: game.code, name: game.name, status: game.status },
-		teams: teams.results,
-		colors: TEAM_COLORS,
-	});
+	return c.json(await publicGame(c.env.DB, game));
 });
 
 playerRoutes.post('/join', async (c) => {
