@@ -1,26 +1,33 @@
 /**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Bind resources to your worker in `wrangler.jsonc`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- *
- * Learn more at https://developers.cloudflare.com/workers/
+ * Zoo Hunt Worker: JSON API under /api, WebSocket rooms under /ws, and the
+ * Vite-built SPA (player app at /, Game Master HQ at /hq) served as static assets.
  */
+import { Hono } from 'hono';
+import type { AppEnv } from './types';
+import { playerRoutes } from './api/player';
+import { adminRoutes } from './api/admin';
 
-export default {
-	async fetch(request, env, ctx): Promise<Response> {
-		const url = new URL(request.url);
-		switch (url.pathname) {
-			case '/message':
-				return new Response('Hello, World!');
-			case '/random':
-				return new Response(crypto.randomUUID());
-			default:
-				return new Response('Not Found', { status: 404 });
-		}
-	},
-} satisfies ExportedHandler<Env>;
+export { GameRoom } from './room';
+
+const app = new Hono<{ Bindings: AppEnv }>();
+
+app.get('/api/health', (c) => c.json({ ok: true, at: Date.now() }));
+app.route('/api/admin', adminRoutes);
+app.route('/api', playerRoutes);
+
+app.get('/ws/:gameId', async (c) => {
+	if (c.req.header('Upgrade')?.toLowerCase() !== 'websocket') return c.text('Expected WebSocket upgrade', 426);
+	const gameId = c.req.param('gameId');
+	const game = await c.env.DB.prepare('SELECT id FROM games WHERE id = ?').bind(gameId).first();
+	if (!game) return c.json({ error: 'Game not found' }, 404);
+	const stub = c.env.GAME_ROOM.get(c.env.GAME_ROOM.idFromName(gameId));
+	return stub.fetch(c.req.raw);
+});
+
+app.notFound((c) => c.json({ error: 'Not found' }, 404));
+app.onError((err, c) => {
+	console.error(err);
+	return c.json({ error: 'Internal error' }, 500);
+});
+
+export default app;

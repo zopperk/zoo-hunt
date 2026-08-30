@@ -3,13 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy",
     "dev": "wrangler dev",
-    "start": "wrangler dev",
+    "dev:web": "npm --prefix web run dev",
+    "build:web": "npm --prefix web run build",
+    "deploy": "npm run build:web && wrangler deploy",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
     "test": "vitest",
-    "cf-typegen": "wrangler types",
-    "typecheck": "tsc --noEmit",
-    "test:ci": "vitest run"
+    "test:ci": "vitest run",
+    "test:web": "npm --prefix web run test:ci",
+    "db:migrate:local": "wrangler d1 migrations apply zoo-hunt --local",
+    "db:migrate:remote": "wrangler d1 migrations apply zoo-hunt --remote",
+    "db:seed:local": "wrangler d1 execute zoo-hunt --local --file=seed/dev.sql",
+    "db:seed:remote": "wrangler d1 execute zoo-hunt --remote --file=seed/dev.sql",
+    "cf-typegen": "wrangler types"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "^1.0.0",
@@ -17,5 +23,8 @@
     "typescript": "^5.5.2",
     "vitest": "~4.1.0",
     "wrangler": "^4.127.1"
+  },
+  "dependencies": {
+    "hono": "^4.13.5"
   }
 }

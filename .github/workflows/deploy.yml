@@ -12,7 +12,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
 
@@ -20,12 +20,34 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
 
-      - run: npm ci
+      - name: Install (worker)
+        run: npm ci
 
-      - run: npm run typecheck
+      - name: Install (web)
+        run: npm --prefix web ci
 
-      - run: npm run test:ci
+      - name: Build web app
+        run: npm run build:web
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test (worker)
+        run: npm run test:ci
+
+      - name: Test (web)
+        run: npm run test:web
+
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply zoo-hunt --remote
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
