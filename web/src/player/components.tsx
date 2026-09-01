@@ -7,7 +7,7 @@ import { MagnifierIcon, MapIcon, TrophyIcon, PersonCircleIcon } from '../shared/
 export function Plank({ children, side, fit }: { children: ReactNode; side?: ReactNode; fit?: boolean }) {
 	return (
 		<div className={`plank ${fit ? 'fit' : ''} ${side ? 'has-side' : ''}`}>
-			{children}
+			<span className="title">{children}</span>
 			{side && <span className="side">{side}</span>}
 		</div>
 	);
@@ -72,9 +72,9 @@ export function Toasts() {
 	);
 }
 
-export function Screen({ children, nav = true, center = false }: { children: ReactNode; nav?: boolean; center?: boolean }) {
+export function Screen({ children, nav = true, center = false, className = '' }: { children: ReactNode; nav?: boolean; center?: boolean; className?: string }) {
 	return (
-		<main className={`screen paper ${nav ? '' : 'no-nav'} ${center ? 'center' : ''}`}>
+		<main className={`screen paper ${nav ? '' : 'no-nav'} ${center ? 'center' : ''} ${className}`}>
 			{children}
 			{nav && <BottomNav />}
 		</main>

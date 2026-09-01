@@ -13,6 +13,7 @@ export interface TeamClue {
 	points: number;
 	status: TeamClueStatus;
 	submission_id: string | null;
+	photo_url: string | null;
 	map_x: number | null;
 	map_y: number | null;
 }

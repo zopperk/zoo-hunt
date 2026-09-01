@@ -3,7 +3,7 @@ import { formatPoints } from '../../shared/format';
 import { useGameState } from '../GameContext';
 import { Confetti, Screen } from '../components';
 
-/** Frame 10-submission: NICE SHOT! + polaroid + BACK TO CLUES. */
+/** Frame 10-submission: NICE SHOT! + snapshot + BACK TO CLUES. */
 export function Submitted() {
 	const { id } = useParams();
 	const s = useGameState();
@@ -19,34 +19,26 @@ export function Submitted() {
 	return (
 		<Screen>
 			<Confetti />
-			<div className="sheet" style={{ marginTop: 20 }}>
-				<div className="card tc" style={{ padding: '18px 16px 22px' }}>
-					<h1 className="display" style={{ fontSize: 40, color: 'var(--orange)' }}>
-						Nice shot!
-					</h1>
-					{photo && (
-						<div className="polaroid mt" style={{ maxWidth: 300 }}>
-							<img src={photo} alt="Submitted find" style={{ aspectRatio: '1 / 1' }} />
+			<div className="submitted">
+				<h1 className="display h-title">Nice shot!</h1>
+				{photo && (
+					<div className="snapshot">
+						<img src={photo} alt="Submitted find" />
+					</div>
+				)}
+				{approved ? (
+					<div className="award">
+						<div className="eyebrow" style={{ color: 'var(--rust)' }}>
+							Submitted!
 						</div>
-					)}
-					{approved ? (
-						<div className="mt">
-							<div className="eyebrow" style={{ color: 'var(--orange)' }}>
-								Submitted!
-							</div>
-							<div className="score-box" style={{ background: 'transparent', border: 0, padding: 0 }}>
-								<div className="v">+{formatPoints(points)} points</div>
-							</div>
-						</div>
-					) : (
-						<p className="h-sub mt" style={{ fontSize: 16, lineHeight: 1.35 }}>
-							Your team’s photo has been submitted for review. The score will load shortly.
-						</p>
-					)}
-				</div>
+						<div className="v">+{formatPoints(points)} points</div>
+					</div>
+				) : (
+					<p className="h-sub">Your team’s photo has been submitted for review. The score will load shortly.</p>
+				)}
 			</div>
 			<div className="spacer" />
-			<Link to="/clues" className="btn md block mt-l">
+			<Link to="/clues" className="btn md center">
 				Back to clues
 			</Link>
 		</Screen>

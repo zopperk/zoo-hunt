@@ -9,10 +9,10 @@ const fixture: Bootstrap = {
 	team: { id: 't1', name: 'Banana Bunch', color: 'yellow', avatar: 'monkey' },
 	players: [],
 	clues: [
-		{ id: 'c1', sort_order: 1, title: 'Splash Happy', body: 'Find the hippo pool', animal: 'hippo', points: 150, status: 'complete', submission_id: 's1', map_x: null, map_y: null },
-		{ id: 'c2', sort_order: 2, title: 'Striped & Proud', body: 'Find the zebras', animal: 'zebra', points: 150, status: 'pending', submission_id: 's2', map_x: null, map_y: null },
-		{ id: 'c3', sort_order: 3, title: 'Lunch in the Trees', body: 'Find the giraffes', animal: 'giraffe', points: 1250, status: 'available', submission_id: null, map_x: null, map_y: null },
-		{ id: 'c4', sort_order: 4, title: 'Big Ears', body: null, animal: null, points: 150, status: 'locked', submission_id: null, map_x: null, map_y: null },
+		{ id: 'c1', sort_order: 1, title: 'Splash Happy', body: 'Find the hippo pool', animal: 'hippo', points: 150, status: 'complete', submission_id: 's1', photo_url: '/api/photos/s1.jpg', map_x: null, map_y: null },
+		{ id: 'c2', sort_order: 2, title: 'Striped & Proud', body: 'Find the zebras', animal: 'zebra', points: 150, status: 'pending', submission_id: 's2', photo_url: null, map_x: null, map_y: null },
+		{ id: 'c3', sort_order: 3, title: 'Lunch in the Trees', body: 'Find the giraffes', animal: 'giraffe', points: 1250, status: 'available', submission_id: null, photo_url: null, map_x: null, map_y: null },
+		{ id: 'c4', sort_order: 4, title: 'Big Ears', body: null, animal: null, points: 150, status: 'locked', submission_id: null, photo_url: null, map_x: null, map_y: null },
 	],
 	leaderboard: [],
 	bonus: { id: 'b', title: 'Team photo with the elephant', description: '', points: 250 },
@@ -32,7 +32,8 @@ const LOCKED_TEXT = 'Locked — the host will release this clue soon.';
 function renderClues() {
 	const utils = render(<Clues />, { wrapper: MemoryRouter });
 	const card = (id: string) => utils.container.querySelector<HTMLAnchorElement>(`a[href="/clues/${id}"]`)!;
-	return { ...utils, card };
+	const row = (id: string) => card(id).closest('.clue-row')!;
+	return { ...utils, card, row };
 }
 
 describe('<Clues />', () => {
@@ -59,14 +60,15 @@ describe('<Clues />', () => {
 		expect(within(card('c4')).getByRole('img', { name: 'Locked' })).toBeInTheDocument();
 	});
 
-	it('links open clues to their detail page with body text and points', () => {
-		const { card } = renderClues();
+	it('links open clues to their detail page with body text, numbered beside the card', () => {
+		const { card, row } = renderClues();
 		const open = card('c3');
 		expect(open).toHaveAttribute('href', '/clues/c3');
 		expect(open).not.toHaveAttribute('aria-disabled', 'true');
 		expect(within(open).getByText('Find the giraffes')).toBeInTheDocument();
-		expect(within(open).getByText('1,250 pts')).toBeInTheDocument();
-		expect(within(open).getByText('Clue #3')).toBeInTheDocument();
+		expect(row('c3').querySelector('.clue-no')).toHaveTextContent('03');
+		// Points are the reward for finding it, so they only show once it's found.
+		expect(open.querySelector('.clue-pts')).toBeNull();
 		expect(open.querySelector('.stamp')).toBeNull();
 	});
 
@@ -81,14 +83,17 @@ describe('<Clues />', () => {
 		expect(screen.getAllByText(LOCKED_TEXT)).toHaveLength(1);
 	});
 
-	it('stamps completed clues as Found', () => {
-		const { card, container } = renderClues();
-		const stamp = card('c1').querySelector('.stamp');
-		expect(stamp).not.toBeNull();
-		expect(stamp).toHaveTextContent('Found');
+	it('stamps completed clues as Found, with their photo and points', () => {
+		const { card, row, container } = renderClues();
+		const found = card('c1');
+		expect(found.querySelector('.stamp')).toHaveTextContent('Found!');
 		expect(container.querySelectorAll('.stamp')).toHaveLength(1);
+		expect(found.querySelector('.clue-pts')).toHaveTextContent('+150 pts');
+		expect(found.querySelector('img.shot')).toHaveAttribute('src', '/api/photos/s1.jpg');
+		expect(row('c1').querySelector('.clue-no')).toHaveClass('complete');
 		// Pending clues are still awaiting review, so no stamp yet.
 		expect(card('c2').querySelector('.stamp')).toBeNull();
+		expect(card('c2').querySelector('img.shot')).toBeNull();
 	});
 
 	it('shows the active bonus challenge with its points', () => {

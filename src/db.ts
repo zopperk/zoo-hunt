@@ -113,6 +113,7 @@ export interface TeamClue {
 	points: number;
 	status: TeamClueStatus;
 	submission_id: string | null;
+	photo_url: string | null; // the team's approved photo, once the clue is found
 	map_x: number | null;
 	map_y: number | null;
 }
@@ -169,14 +170,14 @@ export async function cluesForTeam(db: D1Database, gameId: string, teamId: strin
 	const { results } = await db
 		.prepare(
 			`SELECT c.id, c.sort_order, c.title, c.body, c.animal, c.points, c.status, c.map_x, c.map_y,
-			        s.status AS sub_status, s.id AS submission_id
+			        s.status AS sub_status, s.id AS submission_id, s.r2_key AS r2_key
 			 FROM clues c
 			 LEFT JOIN submissions s ON s.clue_id = c.id AND s.team_id = ? AND s.status <> 'rejected'
 			 WHERE c.game_id = ?
 			 ORDER BY c.sort_order ASC`,
 		)
 		.bind(teamId, gameId)
-		.all<ClueRow & { sub_status: SubmissionStatus | null; submission_id: string | null }>();
+		.all<ClueRow & { sub_status: SubmissionStatus | null; submission_id: string | null; r2_key: string | null }>();
 	return results.map((c) => {
 		const status: TeamClueStatus =
 			c.sub_status === 'approved' ? 'complete' : c.sub_status === 'pending' ? 'pending' : c.status;
@@ -190,6 +191,7 @@ export async function cluesForTeam(db: D1Database, gameId: string, teamId: strin
 			points: c.points,
 			status,
 			submission_id: c.submission_id,
+			photo_url: status === 'complete' && c.r2_key ? photoUrl(c.r2_key) : null,
 			map_x: c.map_x,
 			map_y: c.map_y,
 		};
