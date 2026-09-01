@@ -96,6 +96,11 @@ export function PhotoReviewPanel() {
 										+{done.pts} points
 									</div>
 								)}
+								{s.first_for_clue && (
+									<span className="first-badge" title="First team to reach this animal">
+										1st
+									</span>
+								)}
 								<Lightbox src={s.photo_url} alt={`${s.team_name} – ${s.clue_title}`} />
 								<div className="body">
 									<div className="team">{s.team_name}</div>

@@ -417,7 +417,10 @@ adminRoutes.get('/games/:id/submissions', async (c) => {
 	const where = status && ['pending', 'approved', 'rejected'].includes(status) ? `AND s.status = '${status}'` : '';
 	const { results } = await c.env.DB.prepare(
 		`SELECT s.*, c.title AS clue_title, c.sort_order AS clue_order, c.points AS clue_points,
-		        t.name AS team_name, t.color AS team_color, p.name AS player_name
+		        t.name AS team_name, t.color AS team_color, p.name AS player_name,
+		        (SELECT s2.id FROM submissions s2
+		          WHERE s2.clue_id = s.clue_id AND s2.status <> 'rejected'
+		          ORDER BY s2.created_at ASC, s2.id ASC LIMIT 1) AS first_id
 		 FROM submissions s
 		 JOIN clues c ON c.id = s.clue_id
 		 JOIN teams t ON t.id = s.team_id
@@ -426,8 +429,21 @@ adminRoutes.get('/games/:id/submissions', async (c) => {
 		 ORDER BY s.created_at DESC LIMIT 200`,
 	)
 		.bind(c.req.param('id'))
-		.all<db.SubmissionRow & { clue_title: string; clue_order: number; clue_points: number; team_name: string; team_color: string; player_name: string | null }>();
-	return c.json({ submissions: results.map((s) => ({ ...s, photo_url: db.photoUrl(s.r2_key) })) });
+		.all<
+			db.SubmissionRow & {
+				clue_title: string;
+				clue_order: number;
+				clue_points: number;
+				team_name: string;
+				team_color: string;
+				player_name: string | null;
+				first_id: string | null;
+			}
+		>();
+	// Whoever got to this animal first — the host awards their bonus by hand.
+	return c.json({
+		submissions: results.map(({ first_id, ...s }) => ({ ...s, photo_url: db.photoUrl(s.r2_key), first_for_clue: s.id === first_id })),
+	});
 });
 
 async function approve(env: AppEnv, sub: db.SubmissionRow, bonus: number, reviewer = 'host') {

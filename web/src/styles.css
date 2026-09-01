@@ -1811,6 +1811,24 @@ img {
 	text-overflow: ellipsis;
 	font-weight: 500;
 }
+/* Marks the earliest photo for a clue, so the host can award a first-finder bonus. */
+.first-badge {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	z-index: 2;
+	background: var(--t-yellow);
+	color: var(--brown);
+	border: 2px solid var(--green-ink);
+	border-radius: 999px;
+	padding: 2px 12px;
+	font-family: var(--f-display);
+	font-size: 20px;
+	letter-spacing: 0.06em;
+	line-height: 1.2;
+	box-shadow: var(--shadow);
+	pointer-events: none;
+}
 .activity {
 	list-style: none;
 	padding: 0;

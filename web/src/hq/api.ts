@@ -59,6 +59,8 @@ export interface AdminSubmission {
 	team_name: string;
 	team_color: string;
 	player_name: string | null;
+	/** True for the earliest non-rejected submission against this clue. */
+	first_for_clue: boolean;
 }
 export interface ScoreEvent {
 	id: string;

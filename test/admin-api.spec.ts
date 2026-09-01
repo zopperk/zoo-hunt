@@ -149,6 +149,15 @@ describe('clues', () => {
 	});
 });
 
+/** Give submissions strictly increasing created_at values, in the order passed. */
+async function stampSubmittedAt(subs: { body: { submission: { id: string } } }[], start = 1_700_000_000_000) {
+	for (const [i, s] of subs.entries()) {
+		await env.DB.prepare('UPDATE submissions SET created_at = ? WHERE id = ?')
+			.bind(start + i * 60_000, s.body.submission.id)
+			.run();
+	}
+}
+
 describe('photo review', () => {
 	it('lists pending submissions with team, clue and player context', async () => {
 		const { admin, game, clue, player } = await fixture();
@@ -157,6 +166,41 @@ describe('photo review', () => {
 		expect(r.body.submissions).toHaveLength(1);
 		expect(r.body.submissions[0]).toMatchObject({ team_name: 'Banana Bunch', team_color: 'yellow', clue_title: 'Lunch in the Trees', player_name: 'Alex', clue_points: 150 });
 		expect(r.body.submissions[0].photo_url).toMatch(/^\/api\/photos\//);
+	});
+
+	it('marks only the earliest non-rejected photo per clue as first', async () => {
+		const { admin, game, clue, player } = await fixture();
+		const second = await join(game.code, 'Bo', { teamName: 'Zebra Squad', color: 'blue' });
+		const third = await join(game.code, 'Cy', { teamName: 'Lion Hearts', color: 'red' });
+		const a = await submitPhoto(player.token, clue.id);
+		const b = await submitPhoto(second.token, clue.id);
+		const c = await submitPhoto(third.token, clue.id);
+		// The three land in the same millisecond here; stamp them so order is the thing under test.
+		await stampSubmittedAt([a, b, c]);
+
+		const firstFlags = async () => {
+			const r = await api(`/api/admin/games/${game.id}/submissions`, {}, admin);
+			return Object.fromEntries(r.body.submissions.map((s: any) => [s.id, s.first_for_clue]));
+		};
+
+		// Every team can still submit the same clue; only the earliest is flagged.
+		expect(await firstFlags()).toMatchObject({ [a.body.submission.id]: true, [b.body.submission.id]: false, [c.body.submission.id]: false });
+
+		// Approving the leader does not move the flag.
+		await api(`/api/admin/submissions/${a.body.submission.id}/approve`, { method: 'POST', body: json({}) }, admin);
+		expect((await firstFlags())[a.body.submission.id]).toBe(true);
+	});
+
+	it('hands first place to the next team when the earliest photo is rejected', async () => {
+		const { admin, game, clue, player } = await fixture();
+		const second = await join(game.code, 'Bo', { teamName: 'Zebra Squad', color: 'blue' });
+		const a = await submitPhoto(player.token, clue.id);
+		const b = await submitPhoto(second.token, clue.id);
+		await stampSubmittedAt([a, b]);
+		await api(`/api/admin/submissions/${a.body.submission.id}/reject`, { method: 'POST', body: json({}) }, admin);
+		const r = await api(`/api/admin/games/${game.id}/submissions`, {}, admin);
+		const flags = Object.fromEntries(r.body.submissions.map((s: any) => [s.id, s.first_for_clue]));
+		expect(flags).toMatchObject({ [a.body.submission.id]: false, [b.body.submission.id]: true });
 	});
 
 	it('approve awards clue points (+ optional bonus as a separate ledger row)', async () => {
