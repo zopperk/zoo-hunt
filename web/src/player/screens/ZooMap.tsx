@@ -37,6 +37,7 @@ export function ZooMap() {
 	const me = useRef<L.Marker | null>(null);
 	const [geo, setGeo] = useState<'idle' | 'on' | 'off-map' | 'denied' | 'unsupported'>('idle');
 	const [showKey, setShowKey] = useState(false);
+	const pinned = s.clues.filter((c) => c.map_x !== null && c.map_y !== null).length;
 
 	// Build the map once.
 	useEffect(() => {
@@ -79,11 +80,7 @@ export function ZooMap() {
 		for (const c of s.clues) {
 			if (c.map_x === null || c.map_y === null) continue;
 			const marker = L.marker(toLatLng(c.map_x, c.map_y), { icon: pinIcon(c), keyboard: false });
-			if (c.status === 'locked') {
-				marker.bindPopup(`<b>Clue #${c.sort_order}</b><br/>Locked — coming soon!`);
-			} else {
-				marker.bindPopup(`<b>Clue #${c.sort_order}</b><br/>${c.title}<br/><a href="/clues/${c.id}" data-clue="${c.id}">Open clue ›</a>`);
-			}
+			marker.bindPopup(`<b>Clue #${c.sort_order}</b><br/>${c.title}<br/><a href="/clues/${c.id}" data-clue="${c.id}">Open clue ›</a>`);
 			marker.addTo(group);
 		}
 	}, [s.clues]);
@@ -141,7 +138,7 @@ export function ZooMap() {
 			<div className="sheet map-sheet">
 				<Plank side={geo === 'on' ? '● GPS' : undefined}>Zoo map</Plank>
 				<div className="map-wrap leaflet-wrap">
-					<div ref={el} className="leaflet-host" role="application" aria-label="Bronx Zoo map with clue locations" />
+					<div ref={el} className="leaflet-host" role="application" aria-label="Bronx Zoo map with your position and the clues you have found" />
 					<div className="map-tools">
 						<button type="button" className="btn xs" onClick={locateMe} disabled={geo !== 'on'}>
 							{geo === 'on' ? 'Find me' : geo === 'denied' ? 'Location off' : geo === 'off-map' ? 'Not at the zoo yet' : 'Locating…'}
@@ -155,10 +152,10 @@ export function ZooMap() {
 				<div className="row wrap" style={{ justifyContent: 'center', gap: 8 }}>
 					<span className="pill complete">Found</span>
 					<span className="pill pending">In review</span>
-					<span className="pill rejected">Open</span>
-					<span className="pill locked">Locked</span>
 				</div>
-				<div className="tiny muted tc">Pinch to zoom · tap a pin for the clue · map © Bronx Zoo / WCS</div>
+				<div className="tiny muted tc">
+					{pinned === 0 ? 'Solve a clue and snap it — it gets pinned here.' : 'Pinch to zoom · tap a pin for the clue'} · map © Bronx Zoo / WCS
+				</div>
 			</div>
 		</Screen>
 	);

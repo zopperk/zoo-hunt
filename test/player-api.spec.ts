@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { api, json, fixture, join, bearer, submitPhoto, photoFile, adminHeaders, createGame } from './helpers';
+import { api, json, fixture, join, bearer, submitPhoto, photoFile, adminHeaders, createGame, addClue } from './helpers';
 
 describe('GET /api/games/:code', () => {
 	it('returns public game info and teams', async () => {
@@ -179,6 +179,26 @@ describe('GET /api/me', () => {
 		expect(r.body.bonus).toBeNull();
 		expect(r.body.submissions).toEqual([]);
 		expect(r.body.stats.clues_total).toBe(1);
+	});
+
+	it('withholds a clue’s map position until the team has reached it', async () => {
+		const admin = await adminHeaders();
+		const game = await createGame(admin);
+		const open = await addClue(admin, game.id, { title: 'Open one', status: 'available', mapX: 0.2, mapY: 0.3 });
+		const locked = await addClue(admin, game.id, { title: 'Locked one', status: 'locked', mapX: 0.6, mapY: 0.7 });
+		const player = await join(game.code, 'Alex', { teamName: 'Banana Bunch' });
+
+		const positions = async () => {
+			const r = await api('/api/me', {}, bearer(player.token));
+			return Object.fromEntries(r.body.clues.map((c: any) => [c.id, [c.map_x, c.map_y]]));
+		};
+
+		// A pin would hand over the answer, so neither is placed yet.
+		expect(await positions()).toEqual({ [open.id]: [null, null], [locked.id]: [null, null] });
+
+		// Photographing it puts it on the map, even before the host reviews.
+		await submitPhoto(player.token, open.id);
+		expect(await positions()).toEqual({ [open.id]: [0.2, 0.3], [locked.id]: [null, null] });
 	});
 });
 

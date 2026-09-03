@@ -182,6 +182,9 @@ export async function cluesForTeam(db: D1Database, gameId: string, teamId: strin
 		const status: TeamClueStatus =
 			c.sub_status === 'approved' ? 'complete' : c.sub_status === 'pending' ? 'pending' : c.status;
 		const locked = status === 'locked';
+		// A pin gives the riddle away, so a clue's position is only sent once the
+		// team has actually reached it — the map is a record, not an answer key.
+		const reached = status === 'complete' || status === 'pending';
 		return {
 			id: c.id,
 			sort_order: c.sort_order,
@@ -192,8 +195,8 @@ export async function cluesForTeam(db: D1Database, gameId: string, teamId: strin
 			status,
 			submission_id: c.submission_id,
 			photo_url: status === 'complete' && c.r2_key ? photoUrl(c.r2_key) : null,
-			map_x: c.map_x,
-			map_y: c.map_y,
+			map_x: reached ? c.map_x : null,
+			map_y: reached ? c.map_y : null,
 		};
 	});
 }
